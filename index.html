@@ -61,7 +61,7 @@
   </style>
 </head>
 <body>
-  <header>🏋️‍♂️TREINO BOOSTER</header>
+  <header>💪 TREINO BOOSTER</header>
 
   <div class="tabs">
     <button class="active" onclick="switchWorkout('A')">Treino A</button>
@@ -88,8 +88,22 @@
     let workouts = { A: "", B: "", C: "" };
     let currentWorkout = "A";
 
+    function saveWorkouts() {
+      localStorage.setItem("workouts", JSON.stringify(workouts));
+    }
+
+    function loadWorkouts() {
+      const saved = localStorage.getItem("workouts");
+      if (saved) {
+        workouts = JSON.parse(saved);
+        document.getElementById('exercise-list').innerHTML = workouts[currentWorkout] || "";
+        updateProgress();
+      }
+    }
+
     function switchWorkout(type) {
       workouts[currentWorkout] = document.getElementById('exercise-list').innerHTML;
+      saveWorkouts();
       currentWorkout = type;
       document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
       document.querySelector(`.tabs button:nth-child(${type==='A'?1:type==='B'?2:3})`).classList.add("active");
@@ -111,6 +125,8 @@
         <div class="series-container"></div>
       `;
       container.appendChild(div);
+      workouts[currentWorkout] = document.getElementById('exercise-list').innerHTML;
+      saveWorkouts();
     }
 
     function generateCheckboxes(input) {
@@ -125,6 +141,8 @@
         container.appendChild(cb);
       }
       updateProgress();
+      workouts[currentWorkout] = document.getElementById('exercise-list').innerHTML;
+      saveWorkouts();
     }
 
     function updateProgress() {
@@ -160,6 +178,7 @@
       document.getElementById('output').innerHTML = "";
       document.getElementById('progress').innerHTML = "";
       workouts[currentWorkout] = "";
+      saveWorkouts();
     }
 
     function shareWorkout() {
@@ -183,6 +202,7 @@
     }
     checkAccess();
 
+    // Registrar service worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js");
     }
