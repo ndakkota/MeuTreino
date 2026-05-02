@@ -4,9 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PowerFit</title>
-  <link rel="manifest" href="manifest.json">
   <style>
-    body { font-family: Arial, sans-serif; background:#000; color:#fff; margin:0; }
+    body {
+      font-family: Arial, sans-serif;
+      margin:0;
+      padding-bottom:60px;
+      color:#fff;
+      background: url('background.jfif') no-repeat center center fixed;
+      background-size: cover;
+      position: relative;
+      z-index: 0;
+    }
+
+    /* Overlay escuro translúcido com blur */
+    body::before {
+      content: "";
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      z-index: -1;
+    }
+
     header { text-align:center; padding:20px; background:#111; font-size:1.6em; font-weight:bold; color:silver; border-bottom:3px solid #fd7e14; }
     .tabs { display:flex; justify-content:center; margin:10px; }
     .tabs button { flex:1; padding:10px; border:none; cursor:pointer; background:#222; color:#fff; }
@@ -15,7 +34,6 @@
     .exercise {
       margin-bottom:15px;
       background:rgba(253,126,20,0.15);
-      backdrop-filter: blur(8px);
       padding:12px;
       border-radius:12px;
       border-left:5px solid #fd7e14;
@@ -37,7 +55,6 @@
     button.main {
       padding:12px;
       background:rgba(253,126,20,0.25);
-      backdrop-filter: blur(6px);
       color:#fff; font-weight:bold;
       border:none; border-radius:12px;
       cursor:pointer; transition:0.3s;
@@ -46,18 +63,44 @@
     #output {
       margin-top:20px;
       background:rgba(253,126,20,0.1);
-      backdrop-filter: blur(6px);
       padding:15px; border-radius:12px;
       border:2px solid #fd7e14;
     }
     #progress { margin-top:10px; }
-    .whatsapp-btn {
-      width:32px; height:32px;
-      background:#25D366; border:none;
-      border-radius:50%; cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
+
+    /* Responsividade para mobile */
+    body, input, button, label {
+      font-size:clamp(0.9em, 2.5vw, 1.2em);
     }
-    .whatsapp-btn img { width:18px; height:18px; }
+    @media (max-width: 480px) {
+      .tabs button {
+        font-size:clamp(0.8em, 3vw, 1em);
+        padding:12px;
+      }
+      button.main {
+        width:100%;
+        font-size:clamp(0.9em, 3vw, 1.1em);
+      }
+      .round-checkbox {
+        width:26px;
+        height:26px;
+        margin:4px;
+      }
+    }
+
+    footer {
+      position:fixed;
+      bottom:0;
+      left:0;
+      width:100%;
+      background:rgba(17,17,17,0.6);
+      backdrop-filter: blur(6px);
+      color:silver;
+      text-align:center;
+      padding:5px;
+      font-size:0.7em;
+      border-top:2px solid #fd7e14;
+    }
   </style>
 </head>
 <body>
@@ -75,20 +118,24 @@
     <button class="main" onclick="addExercise()">+ Adicionar Exercício</button>
     <button class="main" onclick="generateWorkout()">📋 Gerar Treino Completo</button>
     <button class="main" onclick="confirmReset()">🔄 Resetar Treino</button>
-    <button class="whatsapp-btn" onclick="shareWorkout()">
-      <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp">
-    </button>
   </div>
 
   <div id="output"></div>
   <div id="progress"></div>
-  <div id="history"></div>
-
   <script>
-    let workouts = { A: "", B: "", C: "" };
+    let workouts = { A: [], B: [], C: [] };
     let currentWorkout = "A";
 
     function saveWorkouts() {
+      const exercises = [];
+      document.querySelectorAll('.exercise').forEach(ex => {
+        const name = ex.querySelector('input[type=text]').value;
+        const series = ex.querySelectorAll('input[type=number]')[0].value;
+        const reps = ex.querySelectorAll('input[type=number]')[1].value;
+        const done = Array.from(ex.querySelectorAll('.round-checkbox')).map(cb => cb.checked);
+        exercises.push({ name, series, reps, done });
+      });
+      workouts[currentWorkout] = exercises;
       localStorage.setItem("workouts", JSON.stringify(workouts));
     }
 
@@ -96,39 +143,47 @@
       const saved = localStorage.getItem("workouts");
       if (saved) {
         workouts = JSON.parse(saved);
-        document.getElementById('exercise-list').innerHTML = workouts[currentWorkout] || "";
-        updateProgress();
+        renderExercises(workouts[currentWorkout]);
       }
     }
 
+    function renderExercises(exercises) {
+      const container = document.getElementById('exercise-list');
+      container.innerHTML = "";
+      if (!exercises) return;
+      exercises.forEach(ex => {
+        const div = document.createElement('div');
+        div.classList.add('exercise');
+        div.innerHTML = `
+          <label>Exercício:</label>
+          <input type="text" value="${ex.name}">
+          <label>Séries:</label>
+          <input type="number" min="1" max="10" value="${ex.series}" onchange="generateCheckboxes(this)">
+          <label>Repetições:</label>
+          <input type="number" min="1" max="30" value="${ex.reps}">
+          <div class="series-container"></div>
+        `;
+        container.appendChild(div);
+        const seriesContainer = div.querySelector(".series-container");
+        for (let i = 0; i < ex.series; i++) {
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.classList.add("round-checkbox");
+          cb.checked = ex.done[i] || false;
+          cb.onchange = () => { updateProgress(); saveWorkouts(); };
+          seriesContainer.appendChild(cb);
+        }
+      });
+      updateProgress();
+    }
+
     function switchWorkout(type) {
-      workouts[currentWorkout] = document.getElementById('exercise-list').innerHTML;
       saveWorkouts();
       currentWorkout = type;
       document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
       document.querySelector(`.tabs button:nth-child(${type==='A'?1:type==='B'?2:3})`).classList.add("active");
-      document.getElementById('exercise-list').innerHTML = workouts[currentWorkout] || "";
-      updateProgress();
+      renderExercises(workouts[currentWorkout]);
     }
-
-    function addExercise() {
-      const container = document.getElementById('exercise-list');
-      const div = document.createElement('div');
-      div.classList.add('exercise');
-      div.innerHTML = `
-        <label>Exercício:</label>
-        <input type="text" placeholder="Digite o exercício">
-        <label>Séries:</label>
-        <input type="number" min="1" max="10" value="1" onchange="generateCheckboxes(this)">
-        <label>Repetições:</label>
-        <input type="number" min="1" max="30" value="1">
-        <div class="series-container"></div>
-      `;
-      container.appendChild(div);
-      workouts[currentWorkout] = document.getElementById('exercise-list').innerHTML;
-      saveWorkouts();
-    }
-
     function generateCheckboxes(input) {
       const count = parseInt(input.value);
       const container = input.parentElement.querySelector(".series-container");
@@ -137,11 +192,10 @@
         const cb = document.createElement("input");
         cb.type = "checkbox";
         cb.classList.add("round-checkbox");
-        cb.onchange = updateProgress;
+        cb.onchange = () => { updateProgress(); saveWorkouts(); };
         container.appendChild(cb);
       }
       updateProgress();
-      workouts[currentWorkout] = document.getElementById('exercise-list').innerHTML;
       saveWorkouts();
     }
 
@@ -154,58 +208,48 @@
     }
 
     function generateWorkout() {
-      const exercises = document.querySelectorAll('.exercise');
-      let result = `<h3>🔥 Treino ${currentWorkout} 🔥</h3><ul>`;
+      const exercises = workouts[currentWorkout];
+      let result = `<h3>🔥 Treino ${currentWorkout} 🔥</h3>`;
       exercises.forEach(ex => {
-        const name = ex.querySelector('input[type=text]').value;
-        const series = ex.querySelectorAll('input[type=number]')[0].value;
-        const reps = ex.querySelectorAll('input[type=number]')[1].value;
-        const done = ex.querySelectorAll('.round-checkbox:checked').length;
-        result += `<li>${name} - ${series} séries de ${reps} repetições (concluídas: ${done})</li>`;
+        result += `<p>${ex.name} — ${ex.series} séries de ${ex.reps} repetições</p>`;
       });
-      result += "</ul>";
       document.getElementById('output').innerHTML = result;
     }
 
     function confirmReset() {
       if (confirm("Tem certeza que deseja redefinir o treino?")) {
-        resetWorkout();
+        document.getElementById('exercise-list').innerHTML = "";
+        document.getElementById('output').innerHTML = "";
+        document.getElementById('progress').innerHTML = "";
+        workouts[currentWorkout] = [];
+        saveWorkouts();
       }
     }
 
-    function resetWorkout() {
-      document.getElementById('exercise-list').innerHTML = "";
-      document.getElementById('output').innerHTML = "";
-      document.getElementById('progress').innerHTML = "";
-      workouts[currentWorkout] = "";
-      saveWorkouts();
-    }
-
-    function shareWorkout() {
-      const text = document.getElementById('output').innerText || "Treino vazio";
-      const url = "https://wa.me/?text=" + encodeURIComponent(text);
-      window.open(url, "_blank");
-    }
-
-    function updateLastAccess() {
-      localStorage.setItem("lastAccess", new Date().toISOString());
-    }
-    function checkAccess() {
+    // Aviso de inatividade (PC e celular)
+    function checkInactivity() {
       const lastAccess = localStorage.getItem("lastAccess");
+      const now = Date.now();
+
       if (lastAccess) {
-        const diffDays = (new Date() - new Date(lastAccess)) / (1000*60*60*24);
+        const diffDays = Math.floor((now - parseInt(lastAccess)) / (1000 * 60 * 60 * 24));
         if (diffDays >= 2) {
-          alert("Quer ir conhecer o Dr. Now? VAI TREINAR!");
+          alert("⚠️ Você está há 2 dias sem treinar!");
         }
       }
-      updateLastAccess();
-    }
-    checkAccess();
 
-    // Registrar service worker
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("sw.js");
+      localStorage.setItem("lastAccess", now);
     }
+
+    // Executa ao abrir o app
+    window.onload = function() {
+      loadWorkouts();
+      checkInactivity();
+    };
   </script>
+
+  <footer>
+    2026 Desenvolvido por @ndakkota
+  </footer>
 </body>
 </html>
