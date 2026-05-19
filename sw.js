@@ -1,19 +1,20 @@
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open("treino-cache").then(cache => {
-      return cache.addAll([
-        "./index.html",
-        "./manifest.json",
-        "./sw.js"
-      ]);
-    })
-  );
+  console.log("Service Worker instalado.");
+  self.skipWaiting();
 });
 
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
+self.addEventListener("activate", event => {
+  console.log("Service Worker ativado.");
+});
+
+// Recebe push do servidor
+self.addEventListener("push", event => {
+  const data = event.data ? event.data.json() : { title: "PowerFit", body: "Você está há 2 dias sem treinar!" };
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "icon-192.png",
+      badge: "icon-192.png"
     })
   );
 });
