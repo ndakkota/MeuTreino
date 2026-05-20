@@ -26,6 +26,19 @@
       backdrop-filter: blur(4px);
       z-index: -1;
     }
+    .delete-btn {
+  background: none;
+  border: none;
+  color: #dc3545; /* vermelho discreto */
+  font-size: 14px;
+  cursor: pointer;
+  float: right;
+  margin-top: -5px;
+}
+
+.delete-btn:hover {
+  color: #ff0000;
+}
 
     header { text-align:center; padding:20px; background:#111; font-size:1.6em; font-weight:bold; color:silver; border-bottom:3px solid #fd7e14; }
     .tabs { display:flex; justify-content:center; margin:10px; }
@@ -158,20 +171,24 @@ function addExercise() {
     <label>Exercício:</label>
     <input type="text" placeholder="Digite o exercício">
     <label>Séries:</label>
-    <input type="number" min="1" max="20" value="1" onchange="generateCheckboxes(this)">
+    <input type="number" min="1" max="10" value="3" onchange="generateCheckboxes(this)">
     <label>Repetições:</label>
-    <input type="number" min="1" max="30" value="1">
+    <input type="number" min="1" max="30" value="12">
     <div class="series-container"></div>
+    <button class="delete-btn" onclick="deleteExercise(this)">✖</button>
   `;
   container.appendChild(div);
 
-  // Gera os checkboxes iniciais
   const seriesInput = div.querySelectorAll('input[type=number]')[0];
   generateCheckboxes(seriesInput);
 
   saveWorkouts();
+  function deleteExercise(button) {
+  const exerciseDiv = button.parentElement;
+  exerciseDiv.remove();
+  saveWorkouts();
 }
-
+}
     function saveWorkouts() {
       const exercises = [];
       document.querySelectorAll('.exercise').forEach(ex => {
@@ -223,13 +240,14 @@ function addExercise() {
       updateProgress();
     }
 
-    function switchWorkout(type) {
-      saveWorkouts();
-      currentWorkout = type;
-      document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
-      document.querySelector(`.tabs button:nth-child(${type==='A'?1:type==='B'?2:3})`).classList.add("active");
-      renderExercises(workouts[currentWorkout]);
-    }
+ function switchWorkout(workout) {
+  currentWorkout = workout;
+  document.getElementById("exercise-list").style.display = "block";
+  document.getElementById("history-list").style.display = "none";
+  document.getElementById("exercise-list").innerHTML = "";
+  loadWorkouts();
+}
+
     function generateCheckboxes(input) {
       const count = parseInt(input.value);
       const container = input.parentElement.querySelector(".series-container");
@@ -271,7 +289,11 @@ function addExercise() {
         saveWorkouts();
       }
     }
-
+function deleteExercise(button) {
+  const exerciseDiv = button.parentElement;
+  exerciseDiv.remove();
+  saveWorkouts();
+}
     // Aviso de inatividade (PC e celular)
     function checkInactivity() {
       const lastAccess = localStorage.getItem("lastAccess");
