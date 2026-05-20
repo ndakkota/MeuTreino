@@ -7,7 +7,7 @@
   <title>PowerFit</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family:  'Calibri', Verdana;
       margin:0;
       padding-bottom:60px;
       color:#fff;
@@ -116,15 +116,24 @@
   </style>
 </head>
 <body>
-  <header>💪 TREINO BOOSTER</header>
+ <header>💪PowerFit</header>
+<div id="dashboard" class="dashboard">
+  <h2>📊 Resumo da Semana</h2>
+  <p id="weekly-progress">Treinos concluídos: 0</p>
+  <p id="last-workout">Último treino: nenhum</p>
+  <p id="motivational">"Você está no caminho certo!"</p>
+</div>
+
 
   <div class="tabs">
     <button class="active" onclick="switchWorkout('A')">Treino A</button>
     <button onclick="switchWorkout('B')">Treino B</button>
     <button onclick="switchWorkout('C')">Treino C</button>
+    <button onclick="renderHistory()">Histórico</button>
   </div>
 
   <div class="container" id="exercise-list"></div>
+  <div class="container" id="history-list" style="display:none;"></div>
 
   <div class="buttons">
     <button class="main" onclick="addExercise()">+ Adicionar Exercício</button>
@@ -323,6 +332,54 @@ function sendToWhatsApp() {
   const url = "https://wa.me/?text=" + encodeURIComponent(message);
   window.open(url, "_blank");
 }
+function saveHistory(workoutText) {
+  let history = JSON.parse(localStorage.getItem("history")) || [];
+  history.push({ date: new Date().toLocaleDateString(), workout: workoutText });
+  localStorage.setItem("history", JSON.stringify(history));
+}
+
+function generateWorkout() {
+  const exercises = workouts[currentWorkout];
+  let result = `<h3>🔥 Treino ${currentWorkout} 🔥</h3>`;
+  exercises.forEach(ex => {
+    result += `<p>${ex.name} — ${ex.series} séries de ${ex.reps} repetições</p>`;
+  });
+  document.getElementById('output').innerHTML = result;
+
+  saveHistory(result);
+  updateDashboard();
+}
+
+function renderHistory() {
+  let history = JSON.parse(localStorage.getItem("history")) || [];
+  const container = document.getElementById("history-list");
+  container.style.display = "block";
+  document.getElementById("exercise-list").style.display = "none";
+
+  container.innerHTML = "<h3>📜 Histórico de Treinos</h3>";
+  history.forEach(h => {
+    container.innerHTML += `<p>${h.date}: ${h.workout}</p>`;
+  });
+}
+
+function updateDashboard() {
+  let history = JSON.parse(localStorage.getItem("history")) || [];
+  const weekly = history.filter(h => {
+    const diffDays = (Date.now() - new Date(h.date).getTime()) / (1000*60*60*24);
+    return diffDays <= 7;
+  });
+
+  document.getElementById("weekly-progress").innerText = `Treinos concluídos: ${weekly.length}`;
+  if (history.length > 0) {
+    document.getElementById("last-workout").innerText = `Último treino: ${history[history.length-1].date}`;
+  }
+}
+
+window.onload = function() {
+  loadWorkouts();
+  checkInactivity();
+  updateDashboard();
+};
 navigator.serviceWorker.ready.then(registration => {
   registration.pushManager.subscribe({
     userVisibleOnly: true,
