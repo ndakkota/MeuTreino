@@ -43,7 +43,11 @@
     header { text-align:center; padding:20px; background:#111; font-size:1.6em; font-weight:bold; color:silver; border-bottom:3px solid #fd7e14; }
     .tabs { display:flex; justify-content:center; margin:10px; }
     .tabs button { flex:1; padding:10px; border:none; cursor:pointer; background:#222; color:#fff; }
-    .tabs button.active { background:#fd7e14; }
+    .tabs button.active {
+  background-color: #fd7e14;
+  color: white;
+}
+
     .container { padding:15px; }
     .exercise {
       margin-bottom:15px;
@@ -239,15 +243,25 @@ function addExercise() {
       });
       updateProgress();
     }
-
- function switchWorkout(workout) {
+function switchWorkout(workout) {
   currentWorkout = workout;
+
+  // Mostra treinos e esconde histórico
   document.getElementById("exercise-list").style.display = "block";
   document.getElementById("history-list").style.display = "none";
   document.getElementById("exercise-list").innerHTML = "";
+
+  // Remove 'active' de todos os botões
+  document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
+
+  // Adiciona 'active' ao botão clicado
+  const buttons = document.querySelectorAll(".tabs button");
+  if (workout === "A") buttons[0].classList.add("active");
+  if (workout === "B") buttons[1].classList.add("active");
+  if (workout === "C") buttons[2].classList.add("active");
+
   loadWorkouts();
 }
-
     function generateCheckboxes(input) {
       const count = parseInt(input.value);
       const container = input.parentElement.querySelector(".series-container");
