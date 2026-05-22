@@ -1,15 +1,41 @@
+// ==========================================
+// CONFIGURAÇÕES E VARIÁVEIS GLOBAIS
+// ==========================================
 let workouts = { A: [], B: [], C: [] };
 let currentWorkout = "A";
 let countdownInterval = null;
 
-// Inicialização única do sistema ao carregar a página
+// ==========================================
+// INICIALIZAÇÃO DO APLICATIVO (window.onload)
+// ==========================================
 window.onload = function() {
   loadWorkouts();
   checkInactivity();
   updateDashboard();
-  initServiceWorker();
+  
+  // Recupera ou cria um ID exclusivo para este dispositivo/usuário
+  const userId = getOrCreateUserId(); 
+  initServiceWorker(userId);
 };
 
+// ==========================================
+// GESTÃO DE USUÁRIO (Prevenção de conflito de IDs)
+// ==========================================
+function getOrCreateUserId() {
+  let userId = localStorage.getItem("powerfit_user_id");
+  
+  // Se o usuário ainda não tem um ID salvo neste celular, gera um identificador único
+  if (!userId) {
+    userId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+    localStorage.setItem("powerfit_user_id", userId);
+  }
+  
+  return userId;
+}
+
+// ==========================================
+// GERENCIAMENTO DE EXERCÍCIOS e SÉRIES
+// ==========================================
 function addExercise() {
   const container = document.getElementById('exercise-list');
   const div = document.createElement('div');
@@ -19,9 +45,9 @@ function addExercise() {
     <label>Exercício:</label>
     <input type="text" placeholder="Digite o exercício" oninput="saveWorkouts()">
     <label>Séries:</label>
-    <input type="number" min="1" max="15" value="1" onchange="generateCheckboxes(this)">
+    <input type="number" min="1" max="10" value="3" onchange="generateCheckboxes(this)">
     <label>Repetições:</label>
-    <input type="number" min="1" max="30" value="1" oninput="saveWorkouts()">
+    <input type="number" min="1" max="30" value="12" oninput="saveWorkouts()">
     <div class="series-container"></div>
   `;
   container.appendChild(div);
@@ -37,7 +63,7 @@ function deleteExercise(button) {
 
 function generateCheckboxes(input) {
   let count = parseInt(input.value) || 1;
-  if (count > 10) count = 10;
+  if (count > 10) count = 10; // Evita problemas visuais por excesso de séries
   
   const container = input.parentElement.querySelector(".series-container");
   container.innerHTML = "";
@@ -47,7 +73,7 @@ function generateCheckboxes(input) {
     cb.type = "checkbox";
     cb.classList.add("round-checkbox");
     cb.onchange = function() {
-      // Dispara o timer apenas se a caixa for marcada como CONCLUÍDA
+      // O cronômetro só inicia se o usuário marcar a série como concluída
       if (this.checked) {
         startRestTimer(60); 
       }
@@ -60,9 +86,11 @@ function generateCheckboxes(input) {
   saveWorkouts();
 }
 
+// ==========================================
 // LÓGICA DO TIMER DE DESCANSO AUTOMÁTICO
+// ==========================================
 function startRestTimer(seconds) {
-  // Limpa qualquer timer anterior ativo para não encavalar o tempo
+  // Reseta qualquer timer que já esteja rodando para evitar duplicações
   clearInterval(countdownInterval);
   
   const banner = document.getElementById("rest-timer-banner");
@@ -79,8 +107,11 @@ function startRestTimer(seconds) {
     if (timeLeft <= 0) {
       clearInterval(countdownInterval);
       banner.style.display = "none";
-      // Opcional: Efeito sonoro nativo sutil de bipes do sistema
-      if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
+      
+      // Feedback físico sutil de vibração no celular (se suportado pelo aparelho)
+      if (window.navigator.vibrate) {
+        window.navigator.vibrate([200, 100, 200]);
+      }
     }
   }, 1000);
 }
@@ -90,6 +121,9 @@ function skipTimer() {
   document.getElementById("rest-timer-banner").style.display = "none";
 }
 
+// ==========================================
+// PERSISTÊNCIA DE DADOS (LOCALSTORAGE)
+// ==========================================
 function saveWorkouts() {
   const exercises = [];
   document.querySelectorAll('.exercise').forEach(ex => {
@@ -151,6 +185,9 @@ function renderExercises(exercises) {
   updateProgress();
 }
 
+// ==========================================
+// NAVEGAÇÃO ENTRE ABAS
+// ==========================================
 function switchWorkout(workout) {
   currentWorkout = workout;
 
@@ -164,6 +201,9 @@ function switchWorkout(workout) {
   renderExercises(workouts[currentWorkout]);
 }
 
+// ==========================================
+// MÉTRICAS, PROGRESSO E DASHBOARD
+// ==========================================
 function updateProgress() {
   const checkboxes = document.querySelectorAll('.round-checkbox');
   const total = checkboxes.length;
@@ -220,6 +260,9 @@ function checkInactivity() {
   localStorage.setItem("lastAccess", now);
 }
 
+// ==========================================
+// INTEGRAÇÕES EXTERNAS (WHATSAPP)
+// ==========================================
 function sendToWhatsApp() {
   const exercises = workouts[currentWorkout];
   if(!exercises || exercises.length === 0) {
@@ -235,8 +278,12 @@ function sendToWhatsApp() {
   window.open(url, "_blank");
 }
 
+// ==========================================
+// HISTÓRICO DE TREINOS E RELATÓRIOS
+// ==========================================
 function saveHistory(workoutText, type) {
   let history = JSON.parse(localStorage.getItem("history")) || [];
+  // Armazena com o timestamp exato do sistema (evita falhas de conversão de data)
   history.push({ timestamp: Date.now(), text: workoutText, type: type });
   localStorage.setItem("history", JSON.stringify(history));
 }
@@ -258,6 +305,7 @@ function renderHistory() {
     return;
   }
 
+  // Organiza para exibir sempre o mais recente no topo (ordem cronológica reversa)
   history.slice().reverse().forEach(h => {
     const dateStr = new Date(h.timestamp).toLocaleDateString();
     container.innerHTML += `
@@ -289,10 +337,55 @@ function updateDashboard() {
   }
 }
 
-function initServiceWorker() {
+// ==========================================
+// NOTIFICAÇÕES PUSH & SERVICE WORKER
+// ==========================================
+function initServiceWorker(userId) {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").then(reg => {
       console.log("Service Worker ativo.");
+      
+      // Controle de requisições de notificação limpo e nativo
+      if (Notification.permission === "default") {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            subscribeUserToPush(reg, userId);
+          }
+        });
+      } else if (Notification.permission === "granted") {
+        subscribeUserToPush(reg, userId);
+      }
     }).catch(err => console.error("Erro SW:", err));
   }
+}
+
+function subscribeUserToPush(reg, userId) {
+  reg.pushManager.getSubscription().then(sub => {
+    if (!sub) {
+      reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: "SUA_PUBLIC_KEY_AQUI" 
+      }).then(subscription => {
+        sendSubscriptionToServer(subscription, userId);
+      });
+    } else {
+      sendSubscriptionToServer(sub, userId);
+    }
+  });
+}
+
+function sendSubscriptionToServer(subscription, userId) {
+  const url = window.location.hostname === "localhost" ? "http://localhost:3000" : "";
+  
+  fetch(`${url}/subscribe`, {
+    method: "POST",
+    body: JSON.stringify({ userId: userId, subscription: subscription }),
+    headers: { "Content-Type": "application/json" }
+  }).catch(e => console.log("Servidor offline: Rodando em modo local seguro."));
+
+  fetch(`${url}/updateAccess`, {
+    method: "POST",
+    body: JSON.stringify({ userId: userId }),
+    headers: { "Content-Type": "application/json" }
+  }).catch(e => {});
 }
