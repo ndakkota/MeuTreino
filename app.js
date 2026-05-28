@@ -186,7 +186,7 @@ function renderExercises(exercises) {
 }
 
 // ==========================================
-// NAVEGAÇÃO ENTRE ABAS (CORRIGIDO)
+// NAVEGAÇÃO ENTRE ABAS
 // ==========================================
 function switchWorkout(workout) {
   currentWorkout = workout;
@@ -269,25 +269,87 @@ function checkInactivity() {
 }
 
 // ==========================================
-// INTEGRAÇÕES EXTERNAS (WHATSAPP)
+// COMPARTILHAMENTO DE IMAGENS (ESTILO STRAVA)
 // ==========================================
+function fillShareCardData() {
+  const exercises = workouts[currentWorkout] || [];
+  
+  document.getElementById("share-workout-title").innerText = `TREINO ${currentWorkout}`;
+  document.getElementById("share-stat-exercises").innerText = exercises.length;
+  
+  const checkboxes = document.querySelectorAll('.round-checkbox');
+  const total = checkboxes.length;
+  const done = document.querySelectorAll('.round-checkbox:checked').length;
+  const percent = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById("share-stat-progress").innerText = `${percent}%`;
+  
+  document.getElementById("share-card-date").innerText = new Date().toLocaleDateString('pt-BR');
+}
+
 function sendToWhatsApp() {
-  const exercises = workouts[currentWorkout];
-  if(!exercises || exercises.length === 0) {
-    alert("Não há treinos para enviar.");
+  const exercises = workouts[currentWorkout] || [];
+  if (exercises.length === 0) {
+    alert("Monte um treino antes de compartilhar!");
     return;
   }
-  let message = `🔥 Ficha de Treino ${currentWorkout} 🔥\n\n`;
-  exercises.forEach(ex => {
-    message += `${ex.name || 'Exercício'} — ${ex.series} séries de ${ex.reps} repetições\n`;
-  });
 
-  const url = "https://wa.me/?text=" + encodeURIComponent(message);
-  window.open(url, "_blank");
+  fillShareCardData();
+  const card = document.getElementById("instagram-share-card");
+  
+  html2canvas(card, { scale: 1, logging: false, useCORS: true }).then(canvas => {
+    canvas.toBlob(blob => {
+      const file = new File([blob], `treino_${currentWorkout}.png`, { type: "image/png" });
+      
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          files: [file],
+          title: `Treino ${currentWorkout} Concluído`,
+          text: 'Mais um pago no Status! 🔥 #PowerFit'
+        });
+      } else {
+        const link = document.createElement('a');
+        link.download = `meu_treino_${currentWorkout}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        alert("Imagem baixada! Agora você já pode postar no seu Status do WhatsApp! 🏋️‍♂️");
+      }
+    }, "image/png");
+  });
+}
+
+function shareToInstagram() {
+  const exercises = workouts[currentWorkout] || [];
+  if (exercises.length === 0) {
+    alert("Monte um treino antes de compartilhar!");
+    return;
+  }
+
+  fillShareCardData();
+  const card = document.getElementById("instagram-share-card");
+  
+  html2canvas(card, { scale: 1, logging: false, useCORS: true }).then(canvas => {
+    canvas.toBlob(blob => {
+      const file = new File([blob], `treino_${currentWorkout}.png`, { type: "image/png" });
+      
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({
+          files: [file],
+          title: `Treino ${currentWorkout} Concluído`,
+          text: 'Foco no objetivo! 🔥 #PowerFit'
+        });
+      } else {
+        const link = document.createElement('a');
+        link.download = `meu_treino_${currentWorkout}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        alert("Imagem baixada! Agora você já pode postar nos seus Stories do Instagram! 🏋️‍♂️");
+      }
+    }, "image/png");
+  });
 }
 
 // ==========================================
-// HISTÓRICO DE TREINOS E RELATÓRIOS (CORRIGIDO)
+// HISTÓRICO DE TREINOS E RELATÓRIOS
 // ==========================================
 function saveHistory(workoutText, type) {
   let history = JSON.parse(localStorage.getItem("history")) || [];
@@ -316,9 +378,8 @@ function renderHistory() {
     return;
   }
 
-  // Renderiza do mais recente para o mais antigo com botão de exclusão funcional
   history.slice().reverse().forEach((h, index) => {
-    const originalIndex = history.length - 1 - index; // Ajusta o index por conta do reverse
+    const originalIndex = history.length - 1 - index; 
     const dateStr = new Date(h.timestamp).toLocaleDateString();
     
     container.innerHTML += `
@@ -334,14 +395,9 @@ function renderHistory() {
 function deleteHistoryItem(index) {
   if (confirm("Deseja apagar este treino do histórico?")) {
     let history = JSON.parse(localStorage.getItem("history")) || [];
-    
-    // Remove o item selecionado da array
     history.splice(index, 1);
-    
-    // Salva a nova lista atualizada de volta no localStorage
     localStorage.setItem("history", JSON.stringify(history));
     
-    // Atualiza a tela do histórico e os números do Dashboard
     renderHistory();
     updateDashboard();
   }
