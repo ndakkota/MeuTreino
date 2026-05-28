@@ -1,94 +1,251 @@
 /* ==========================================
- * DESIGN DO CARD ESTILO STRAVA (CORREÇÃO DEFINITIVA)
+ * ESTILIZAÇÃO GERAL E DESIGN SYSTEM PWA
  * ========================================== */
-.share-card-hidden {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1080px; 
-  height: 1080px;
-  background-color: #0e0e12;
-  background-image: radial-gradient(circle at top right, rgba(253, 126, 20, 0.12), transparent 700px);
-  box-sizing: border-box;
-  padding: 90px;
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #0a0a0c;
+  color: #f4f4f5;
+  margin: 0;
+  padding: 0 0 100px 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  
-  /* Remove o card da visão do usuário sem ocultá-lo do motor de renderização */
-  transform: translateX(-9999px);
+  align-items: center;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.share-card-header {
+header {
+  background: rgba(10, 10, 12, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  width: 100%;
+  padding: 16px 0;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.header-container {
   display: flex;
   align-items: center;
-  gap: 22px;
-  font-size: 48px;
+  justify-content: center;
+  gap: 10px;
   font-weight: 900;
-  color: #ffffff;
-  letter-spacing: 2px;
+  font-size: 1.4em;
+  letter-spacing: 1px;
 }
+.brand-icon { width: 28px; height: 28px; }
+.accent-text { color: #fd7e14; }
+
+.timer-banner {
+  background: linear-gradient(135deg, #fd7e14 0%, #f76707 100%);
+  color: #fff;
+  width: 90%;
+  max-width: 450px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 8px 24px rgba(253, 126, 20, 0.3);
+  margin-top: 15px;
+  box-sizing: border-box;
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.timer-label { font-weight: 700; font-size: 0.9em; letter-spacing: 0.5px; }
+#timer-countdown { font-size: 1.3em; font-weight: 900; }
+.timer-skip-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none; color: white;
+  padding: 6px 14px; border-radius: 8px;
+  font-weight: 700; cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dashboard {
+  background: #141417;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  width: 90%;
+  max-width: 450px;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+.dashboard h2 { margin: 0 0 10px 0; font-size: 1.1em; font-weight: 800; color: #fff; }
+.dashboard p { margin: 4px 0; font-size: 0.9em; color: #a1a1aa; }
+#motivational { font-style: italic; color: #fd7e14; margin-top: 8px !important; font-weight: 500; }
+
+.tabs {
+  display: flex;
+  background: #141417;
+  padding: 4px;
+  border-radius: 12px;
+  margin: 20px 0;
+  width: 90%;
+  max-width: 450px;
+  box-sizing: border-box;
+}
+.tabs button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #a1a1aa;
+  padding: 10px 0;
+  font-weight: 700;
+  font-size: 0.85em;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tabs button.active { background: #27272a; color: #fff; }
+
+.container { width: 90%; max-width: 450px; }
+.exercise {
+  background: #141417;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  position: relative;
+  box-sizing: border-box;
+  animation: fadeIn 0.2s ease;
+}
+.exercise label {
+  display: block;
+  font-size: 0.8em;
+  color: #71717a;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+}
+.exercise input[type=text], .exercise input[type=number] {
+  width: 100%;
+  background: #202024;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 4px;
+  box-sizing: border-box;
+  font-size: 0.95em;
+  font-weight: 600;
+}
+
+.series-container { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.round-checkbox {
+  -webkit-appearance: none; appearance: none;
+  width: 28px; height: 28px;
+  border: 2px solid #3f3f46; border-radius: 50%;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.round-checkbox:checked { background-color: #fd7e14; border-color: #fd7e14; }
+.round-checkbox:checked::after { content: "✓"; color: #fff; font-weight: 900; font-size: 0.85em; }
+
+.delete-btn {
+  position: absolute; top: 14px; right: 14px;
+  background: transparent; border: none; color: #71717a;
+  font-size: 1.1em; cursor: pointer;
+}
+.delete-btn:hover { color: #ef4444; }
+
+#progress { font-weight: 700; color: #a1a1aa; font-size: 0.9em; margin: 10px 0; }
+#output {
+  background: rgba(253, 126, 20, 0.05);
+  border: 1px dashed rgba(253, 126, 20, 0.3);
+  padding: 14px; border-radius: 12px;
+  width: 90%; max-width: 450px;
+  box-sizing: border-box; margin-bottom: 20px;
+  display: none;
+}
+#output h3 { margin: 0 0 8px 0; color: #fd7e14; font-size: 1.1em; }
+#output p { margin: 4px 0; font-size: 0.9em; color: #e4e4e7; }
+
+.buttons-group { width: 90%; max-width: 450px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
+button.main {
+  width: 100%; background: #fff; color: #000; border: none;
+  padding: 14px 0; border-radius: 12px; font-weight: 700;
+  font-size: 0.95em; cursor: pointer; box-sizing: border-box;
+}
+button#btn-add { background: #141417; color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); }
+
+.action-row { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
+.action-row .reset-layout-btn { flex: 1; margin: 0; background: #27272a; color: #fff; }
+
+/* Botão Único de Compartilhamento Unificado */
+.share-main-btn {
+  height: 50px; background: #fd7e14; border: none; border-radius: 12px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 0 20px; color: #fff; font-weight: 700; font-size: 0.95em;
+  flex: 1.2; transition: background 0.2s ease;
+}
+.share-main-btn:hover { background: #f76707; }
+
+footer {
+  position: fixed; bottom: 0; left: 0; width: 100%;
+  background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(10px);
+  color: #71717a; text-align: center; padding: 12px 0; font-size: 0.75em;
+  border-top: 1px solid rgba(255, 255, 255, 0.05); z-index: 10;
+}
+
+/* ==========================================
+ * INTERFACE DE CARDIO (ESTILO STRAVA)
+ * ========================================== */
+.cardio-dashboard {
+  background: #141417; border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px; padding: 25px 20px; text-align: center; box-sizing: border-box;
+}
+.cardio-main-stat { margin-bottom: 20px; }
+.cardio-main-stat span { font-size: 4.2em; font-weight: 900; color: #fff; display: block; line-height: 1; }
+.cardio-main-stat label { color: #fd7e14; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: 0.85em; margin-top: 6px; display: block; }
+
+.cardio-sub-stats { display: flex; gap: 15px; margin-bottom: 20px; }
+.cardio-mini-box { flex: 1; background: #202024; padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.03); }
+.cardio-mini-box span { font-size: 1.5em; font-weight: 800; color: #fff; display: block; }
+.cardio-mini-box label { font-size: 0.75em; color: #71717a; text-transform: uppercase; font-weight: 700; display: block; margin-top: 2px; }
+
+.cardio-map-wrapper {
+  background: #0e0e12; border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px; margin-bottom: 20px; padding: 10px;
+  display: flex; justify-content: center; align-items: center;
+}
+#cardio-route-canvas { display: block; background: #0e0e12; }
+
+.cardio-start-btn {
+  width: 100%; background: #fd7e14; color: #fff; border: none; padding: 16px 0;
+  border-radius: 14px; font-weight: 800; font-size: 1em; cursor: pointer;
+  box-shadow: 0 4px 15px rgba(253, 126, 20, 0.2);
+}
+.cardio-start-btn.active { background: #ef4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2); }
+
+/* ==========================================
+ * DESIGN DO CARD DE IMAGEM
+ * ========================================== */
+.share-card-hidden {
+  position: absolute; top: 0; left: 0; width: 1080px; height: 1080px;
+  background-color: #0e0e12; box-sizing: border-box; padding: 90px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  transform: translateX(-9999px);
+}
+.share-card-header { display: flex; align-items: center; gap: 22px; font-size: 48px; font-weight: 900; color: #ffffff; letter-spacing: 2px; }
 .share-card-header .brand-icon { width: 70px; height: 70px; }
 .share-card-header .accent-text { color: #fd7e14; }
 
-.share-card-body {
-  text-align: center;
-  margin-top: -20px;
-}
-.share-card-body h1 {
-  font-size: 135px;
-  font-weight: 900;
-  margin: 0;
-  color: #ffffff;
-  letter-spacing: -3px;
-  text-transform: uppercase;
-}
-.share-status {
-  font-size: 36px;
-  font-weight: 800;
-  color: #fd7e14;
-  letter-spacing: 6px;
-  margin-top: 20px;
-  margin-bottom: 110px;
-}
+.share-card-body { text-align: center; margin-top: -20px; }
+.share-card-body h1 { font-size: 135px; font-weight: 900; margin: 0; color: #ffffff; letter-spacing: -3px; text-transform: uppercase; }
+.share-status { font-size: 36px; font-weight: 800; color: #fd7e14; letter-spacing: 6px; margin-top: 20px; margin-bottom: 60px; }
 
-.share-stats-row {
-  display: flex;
-  justify-content: center;
-  gap: 60px;
-}
-.share-stat-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #18181b;
-  border: 2px solid #27272a;
-  padding: 45px 55px;
-  border-radius: 28px;
-  min-width: 280px;
-}
-.share-stat-val {
-  font-size: 100px;
-  font-weight: 900;
-  color: #ffffff;
-  line-height: 1;
-}
-.share-stat-lbl {
-  font-size: 24px;
-  color: #a1a1aa;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-top: 25px;
-  font-weight: 700;
-}
+#share-route-canvas { background: #141417; border-radius: 24px; border: 2px solid #27272a; }
 
-.share-card-footer {
-  font-size: 34px;
-  color: #52525b;
-  font-weight: 700;
-  text-align: center;
-  border-top: 2px solid #18181b;
-  padding-top: 45px;
-  letter-spacing: 1px;
-}
+.share-stats-row { display: flex; justify-content: center; gap: 60px; }
+.share-stat-box { display: flex; flex-direction: column; align-items: center; background: #18181b; border: 2px solid #27272a; padding: 45px 55px; border-radius: 28px; min-width: 280px; }
+.share-stat-val { font-size: 100px; font-weight: 900; color: #ffffff; line-height: 1; }
+.share-stat-lbl { font-size: 24px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 2px; margin-top: 25px; font-weight: 700; }
+
+.share-card-footer { font-size: 34px; color: #52525b; font-weight: 700; text-align: center; border-top: 2px solid #18181b; padding-top: 45px; letter-spacing: 1px; }
+
+@keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
