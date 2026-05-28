@@ -13,7 +13,7 @@
     <div class="header-container">
       <svg class="brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M6.5 7.5C7.32843 7.5 8 6.82843 8 6C8 5.17157 7.32843 4.5 6.5 4.5C5.67157 4.5 5 5.17157 5 6C5 6.82843 5.67157 7.5 6.5 7.5Z" fill="#fd7e14"/>
-        <path d="M17.5 7.5C18.3284 7.5 19 6.82843 19 6C19 5.17157 18.3284 4.5 17.5 4.5C16.6716 4.5 16 5.17157 16 6C16 6.82843 16.6716 7.5 17.5 7.5Z" fill="#fd7e14"/>
+        <path d="M17.5 7.5C18.3284 7.5 19 6.82843 19 6C19 5.17157 18.3284 4.5 17.5 4.5C16.6716 4.5 16 6 16 6C16 6.82843 16.6716 7.5 17.5 7.5Z" fill="#fd7e14"/>
         <path d="M2 9C2 8.44772 2.44772 8 3 8H21C21.5523 8 22 8.44772 22 9V11C22 11.5523 21.5523 12 21 12H19V15C19 16.6569 17.6569 18 16 18H8C6.34315 18 5 16.6569 5 15V12H3C2.44772 12 2 11.5523 2 11V9ZM7 12V15C7 15.5523 7.44772 16 8 16H16C16.5523 16 17 15.5523 17 15V12H7Z" fill="#ffffff"/>
       </svg>
       <span>POWER<span class="accent-text">FIT</span></span>
@@ -52,18 +52,50 @@
     
     <div class="action-row">
       <button class="main reset-layout-btn" onclick="confirmReset()">🔄 Resetar Treino</button>
-      <button class="whatsapp-btn" onclick="sendToWhatsApp()" title="Enviar via WhatsApp">
+      
+      <button class="whatsapp-btn" onclick="sendToWhatsApp()" title="Enviar para o Status do WhatsApp">
         <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="WhatsApp">
+      </button>
+      
+      <button class="instagram-btn" onclick="shareToInstagram()" title="Compartilhar no Instagram">
+        <img src="https://cdn-icons-png.flaticon.com/512/3955/3955024.png" alt="Instagram">
       </button>
     </div>
   </div>
 
-<footer>
-    <div class="footer-content">
-      <span>2026 Desenvolvido por @ndakkota</span>
+  <div id="instagram-share-card" class="share-card-hidden">
+    <div class="share-card-header">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6.5 7.5C7.32843 7.5 8 6.82843 8 6C8 5.17157 7.32843 4.5 6.5 4.5C5.67157 4.5 5 5.17157 5 6C5 6.82843 5.67157 7.5 6.5 7.5Z" fill="#fd7e14"/>
+        <path d="M17.5 7.5C18.3284 7.5 19 6.82843 19 6C19 5.17157 18.3284 4.5 17.5 4.5C16.6716 4.5 16 6 16 6C16 6.82843 16.6716 7.5 17.5 7.5Z" fill="#fd7e14"/>
+        <path d="M2 9C2 8.44772 2.44772 8 3 8H21C21.5523 8 22 8.44772 22 9V11C22 11.5523 21.5523 12 21 12H19V15C19 16.6569 17.6569 18 16 18H8C6.34315 18 5 16.6569 5 15V12H3C2.44772 12 2 11.5523 2 11V9ZM7 12V15C7 15.5523 7.44772 16 8 16H16C16.5523 16 17 15.5523 17 15V12H7Z" fill="#ffffff"/>
+      </svg>
+      <span>POWER<span class="accent-text">FIT</span></span>
     </div>
+    <div class="share-card-body">
+      <h1 id="share-workout-title">TREINO A</h1>
+      <p class="share-status">CONCLUÍDO COM SUCESSO</p>
+      <div class="share-stats-row">
+        <div class="share-stat-box">
+          <span class="share-stat-val" id="share-stat-exercises">0</span>
+          <span class="share-stat-lbl">Exercícios</span>
+        </div>
+        <div class="share-stat-box">
+          <span class="share-stat-val" id="share-stat-progress">0%</span>
+          <span class="share-stat-lbl">Progresso</span>
+        </div>
+      </div>
+    </div>
+    <div class="share-card-footer">
+      <span id="share-card-date">00/00/2026</span>
+    </div>
+  </div>
+
+  <footer>
+    2026 Desenvolvido por @ndakkota
   </footer>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
