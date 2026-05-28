@@ -352,7 +352,7 @@ function clearCanvas(canvasId) {
 function fillShareCardData() {
   const mapContainer = document.getElementById("share-map-container");
   if (currentWorkout === "Cardio") {
-    document.getElementById("share-workout-title").innerText = "CARDIO OUTDOOR";
+    document.getElementById("share-workout-title").innerText = "DIA DE CARDIO";
     mapContainer.style.display = "block";
     drawRoute("share-route-canvas", cardioData.positions);
     document.getElementById("share-stat-exercises").innerText = `${cardioData.distance.toFixed(2)} km`;
