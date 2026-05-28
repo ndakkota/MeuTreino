@@ -56,6 +56,7 @@ function addExercise() {
   generateCheckboxes(seriesInput);
 }
 
+// Nova função adicionada
 function deleteExercise(button) {
   button.parentElement.remove();
   saveWorkouts();
@@ -296,7 +297,7 @@ function sendToWhatsApp() {
   fillShareCardData();
   const card = document.getElementById("instagram-share-card");
   
-  html2canvas(card, { scale: 1, logging: false, useCORS: true }).then(canvas => {
+  html2canvas(card, { scale: 1, logging: false, useCORS: true, backgroundColor: "#0a0a0c" }).then(canvas => {
     canvas.toBlob(blob => {
       const file = new File([blob], `treino_${currentWorkout}.png`, { type: "image/png" });
       
@@ -327,7 +328,7 @@ function shareToInstagram() {
   fillShareCardData();
   const card = document.getElementById("instagram-share-card");
   
-  html2canvas(card, { scale: 1, logging: false, useCORS: true }).then(canvas => {
+  html2canvas(card, { scale: 1, logging: false, useCORS: true, backgroundColor: "#0a0a0c" }).then(canvas => {
     canvas.toBlob(blob => {
       const file = new File([blob], `treino_${currentWorkout}.png`, { type: "image/png" });
       
