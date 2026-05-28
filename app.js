@@ -5,36 +5,37 @@ let workouts = { A: [], B: [], C: [] };
 let currentWorkout = "A";
 let countdownInterval = null;
 
+// VARIÁVEIS RASTREADOR CARDIO E PERCURSO
+let cardioInterval = null;
+let watchId = null;
+let cardioActive = false;
+let cardioData = { distance: 0, seconds: 0, positions: [] };
+
 // ==========================================
-// INICIALIZAÇÃO DO APLICATIVO (window.onload)
+// INICIALIZAÇÃO DO APLICATIVO
 // ==========================================
 window.onload = function() {
   loadWorkouts();
   checkInactivity();
   updateDashboard();
   
-  // Recupera ou cria um ID exclusivo para este dispositivo/usuário
   const userId = getOrCreateUserId(); 
   initServiceWorker(userId);
+  
+  clearCanvas("cardio-route-canvas");
 };
 
-// ==========================================
-// GESTÃO DE USUÁRIO (Prevenção de conflito de IDs)
-// ==========================================
 function getOrCreateUserId() {
   let userId = localStorage.getItem("powerfit_user_id");
-  
-  // Se o usuário ainda não tem um ID salvo neste celular, gera um identificador único
   if (!userId) {
     userId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
     localStorage.setItem("powerfit_user_id", userId);
   }
-  
   return userId;
 }
 
 // ==========================================
-// GERENCIAMENTO DE EXERCÍCIOS e SÉRIES
+// GERENCIAMENTO DE EXERCÍCIOS E SÉRIES
 // ==========================================
 function addExercise() {
   const container = document.getElementById('exercise-list');
@@ -51,9 +52,7 @@ function addExercise() {
     <div class="series-container"></div>
   `;
   container.appendChild(div);
-
-  const seriesInput = div.querySelector('input[type=number]');
-  generateCheckboxes(seriesInput);
+  generateCheckboxes(div.querySelector('input[type=number]'));
 }
 
 function deleteExercise(button) {
@@ -63,7 +62,7 @@ function deleteExercise(button) {
 
 function generateCheckboxes(input) {
   let count = parseInt(input.value) || 1;
-  if (count > 10) count = 10; // Evita problemas visuais por excesso de séries
+  if (count > 10) count = 10;
   
   const container = input.parentElement.querySelector(".series-container");
   container.innerHTML = "";
@@ -73,10 +72,7 @@ function generateCheckboxes(input) {
     cb.type = "checkbox";
     cb.classList.add("round-checkbox");
     cb.onchange = function() {
-      // O cronômetro só inicia se o usuário marcar a série como concluída
-      if (this.checked) {
-        startRestTimer(60); 
-      }
+      if (this.checked) startRestTimer(60);
       updateProgress(); 
       saveWorkouts(); 
     };
@@ -87,12 +83,10 @@ function generateCheckboxes(input) {
 }
 
 // ==========================================
-// LÓGICA DO TIMER DE DESCANSO AUTOMÁTICO
+// TIMER DE DESCANSO AUTOMÁTICO
 // ==========================================
 function startRestTimer(seconds) {
-  // Reseta qualquer timer que já esteja rodando para evitar duplicações
   clearInterval(countdownInterval);
-  
   const banner = document.getElementById("rest-timer-banner");
   const display = document.getElementById("timer-countdown");
   
@@ -103,15 +97,10 @@ function startRestTimer(seconds) {
   countdownInterval = setInterval(() => {
     timeLeft--;
     display.innerText = `${timeLeft}s`;
-
     if (timeLeft <= 0) {
       clearInterval(countdownInterval);
       banner.style.display = "none";
-      
-      // Feedback físico sutil de vibração no celular (se suportado pelo aparelho)
-      if (window.navigator.vibrate) {
-        window.navigator.vibrate([200, 100, 200]);
-      }
+      if (window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]);
     }
   }, 1000);
 }
@@ -137,12 +126,9 @@ function saveWorkouts() {
   localStorage.setItem("workouts", JSON.stringify(workouts));
 }
 
-// Corrigido para garantir que renderize na aba atual corretamente
 function loadWorkouts() {
   const saved = localStorage.getItem("workouts");
-  if (saved) {
-    workouts = JSON.parse(saved);
-  }
+  if (saved) workouts = JSON.parse(saved);
   renderExercises(workouts[currentWorkout]);
 }
 
@@ -192,26 +178,29 @@ function renderExercises(exercises) {
 function switchWorkout(workout) {
   currentWorkout = workout;
 
-  // Garante que a lista de exercícios e o botão de adicionar voltem a aparecer
-  document.getElementById("exercise-list").style.display = "block";
-  document.getElementById("btn-add").style.display = "block";
-  
-  // Reexibe o grupo completo de botões de ação do treino
+  document.getElementById("exercise-list").style.display = "none";
+  document.getElementById("btn-add").style.display = "none";
+  document.getElementById("cardio-panel").style.display = "none";
+  document.getElementById("history-list").style.display = "none";
   document.querySelector(".buttons-group").style.display = "flex";
 
-  // Esconde a tela do histórico
-  document.getElementById("history-list").style.display = "none";
-
-  // Atualiza visualmente qual aba está ativa
   document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
   document.getElementById(`btn-tab-${workout}`).classList.add("active");
 
-  // Renderiza os exercícios do treino selecionado
-  renderExercises(workouts[currentWorkout]);
+  if (workout === "Cardio") {
+    document.getElementById("cardio-panel").style.display = "block";
+    document.getElementById("btn-add").style.display = "none";
+    document.querySelectorAll(".buttons-group button.main")[1].style.display = "none"; 
+  } else {
+    document.getElementById("exercise-list").style.display = "block";
+    document.getElementById("btn-add").style.display = "block";
+    document.querySelectorAll(".buttons-group button.main")[1].style.display = "block"; 
+    renderExercises(workouts[currentWorkout]);
+  }
 }
 
 // ==========================================
-// MÉTRICAS, PROGRESSO E DASHBOARD
+// DASHBOARD E RESET
 // ==========================================
 function updateProgress() {
   const checkboxes = document.querySelectorAll('.round-checkbox');
@@ -224,136 +213,185 @@ function updateProgress() {
 function generateWorkout() {
   const exercises = workouts[currentWorkout];
   if(!exercises || exercises.length === 0) {
-    alert("Adicione exercícios antes de gerar o treino!");
-    return;
+    alert("Adicione exercícios antes de gerar o treino!"); return;
   }
-
   let resultText = "";
   let htmlResult = `<h3>🔥 Treino ${currentWorkout} 🔥</h3>`;
-  
   exercises.forEach(ex => {
     const item = `${ex.name || 'Sem nome'} — ${ex.series} séries de ${ex.reps} repetições`;
-    htmlResult += `<p>${item}</p>`;
-    resultText += item + "\n";
+    htmlResult += `<p>${item}</p>`; resultText += item + "\n";
   });
-  
   const outDiv = document.getElementById('output');
-  outDiv.innerHTML = htmlResult;
-  outDiv.style.display = "block";
-
-  saveHistory(resultText, currentWorkout);
-  updateDashboard();
+  outDiv.innerHTML = htmlResult; outDiv.style.display = "block";
+  saveHistory(resultText, currentWorkout); updateDashboard();
 }
 
 function confirmReset() {
-  if (confirm("Tem certeza que deseja redefinir o treino atual?")) {
-    document.getElementById('exercise-list').innerHTML = "";
-    document.getElementById('output').innerHTML = "";
-    document.getElementById('output').style.display = "none";
-    workouts[currentWorkout] = [];
-    saveWorkouts();
-    updateProgress();
+  if (confirm("Tem certeza que deseja redefinir a atividade atual?")) {
+    if(currentWorkout === "Cardio") {
+      cardioData = { distance: 0, seconds: 0, positions: [] };
+      document.getElementById("cardio-distance").innerText = "0.00";
+      document.getElementById("cardio-duration").innerText = "00:00";
+      document.getElementById("cardio-speed").innerText = "0.0";
+      clearCanvas("cardio-route-canvas");
+    } else {
+      document.getElementById('exercise-list').innerHTML = "";
+      document.getElementById('output').innerHTML = "";
+      document.getElementById('output').style.display = "none";
+      workouts[currentWorkout] = []; saveWorkouts(); updateProgress();
+    }
   }
 }
 
 function checkInactivity() {
   const lastAccess = localStorage.getItem("lastAccess");
   const now = Date.now();
-
   if (lastAccess) {
     const diffDays = Math.floor((now - parseInt(lastAccess)) / (1000 * 60 * 60 * 24));
-    if (diffDays >= 2) {
-      alert("⚠️ Você está há " + diffDays + " dias sem treinar! Bora focar!");
-    }
+    if (diffDays >= 2) alert("⚠️ Você está há " + diffDays + " dias sem treinar! Bora focar!");
   }
   localStorage.setItem("lastAccess", now);
 }
 
 // ==========================================
-// COMPARTILHAMENTO DE IMAGENS (ESTILO STRAVA)
+// RASTREAMENTO DE CARDIO (GPS + CANVAS)
+// ==========================================
+function toggleCardioTracking() {
+  const btn = document.getElementById("btn-toggle-cardio");
+  if (!cardioActive) {
+    if (!navigator.geolocation) { alert("Seu aparelho não suporta GPS!"); return; }
+    
+    cardioActive = true;
+    cardioData = { distance: 0, seconds: 0, positions: [] };
+    document.getElementById("cardio-distance").innerText = "0.00";
+    document.getElementById("cardio-duration").innerText = "00:00";
+    document.getElementById("cardio-speed").innerText = "0.0";
+    clearCanvas("cardio-route-canvas");
+    
+    btn.innerText = "⏹ Finalizar e Salvar Atividade";
+    btn.classList.add("active");
+    
+    cardioInterval = setInterval(() => {
+      cardioData.seconds++;
+      const mins = Math.floor(cardioData.seconds / 60).toString().padStart(2, '0');
+      const secs = (cardioData.seconds % 60).toString().padStart(2, '0');
+      document.getElementById("cardio-duration").innerText = `${mins}:${secs}`;
+      if (cardioData.distance > 0) {
+        const hours = cardioData.seconds / 3600;
+        document.getElementById("cardio-speed").innerText = (cardioData.distance / hours).toFixed(1);
+      }
+    }, 1000);
+    
+    watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const newPos = { lat: latitude, lng: longitude };
+        if (cardioData.positions.length > 0) {
+          const lastPos = cardioData.positions[cardioData.positions.length - 1];
+          const distIncrement = calculateDistance(lastPos.lat, lastPos.lng, newPos.lat, newPos.lng);
+          if (distIncrement > 0.001) { 
+            cardioData.distance += distIncrement;
+            document.getElementById("cardio-distance").innerText = cardioData.distance.toFixed(2);
+          }
+        }
+        cardioData.positions.push(newPos);
+        drawRoute("cardio-route-canvas", cardioData.positions);
+      },
+      (err) => console.log(err), { enableHighAccuracy: true, distanceFilter: 1 }
+    );
+  } else {
+    cardioActive = false; btn.innerText = "▶ Iniciar Atividade"; btn.classList.remove("active");
+    clearInterval(cardioInterval); if (watchId) navigator.geolocation.clearWatch(watchId);
+    
+    const durationText = document.getElementById("cardio-duration").innerText;
+    const finalDistance = cardioData.distance.toFixed(2);
+    const avgSpeed = document.getElementById("cardio-speed").innerText;
+    
+    const summary = `Distância: ${finalDistance} km\nDuração: ${durationText}\nVelocidade Média: ${avgSpeed} km/h`;
+    saveHistory(summary, "CARDIO 🏃‍♂️"); updateDashboard();
+    alert("Cardio salvo com sucesso! Pronto para postar.");
+  }
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+function drawRoute(canvasId, positions) {
+  const canvas = document.getElementById(canvasId);
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (positions.length < 2) return;
+
+  let lats = positions.map(p => p.lat), lngs = positions.map(p => p.lng);
+  let minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  let minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+  let latRange = maxLat - minLat || 0.0001, lngRange = maxLng - minLng || 0.0001;
+
+  ctx.beginPath(); ctx.strokeStyle = "#fd7e14"; ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.lineJoin = "round";
+  positions.forEach((pos, i) => {
+    let x = 30 + ((pos.lng - minLng) / lngRange) * (canvas.width - 60);
+    let y = (canvas.height - 30) - ((pos.lat - minLat) / latRange) * (canvas.height - 60);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+}
+
+function clearCanvas(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if(canvas) canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// ==========================================
+// COMPARTILHAMENTO UNIFICADO (SISTEMA NATIVO)
 // ==========================================
 function fillShareCardData() {
-  const exercises = workouts[currentWorkout] || [];
-  
-  document.getElementById("share-workout-title").innerText = `TREINO ${currentWorkout}`;
-  document.getElementById("share-stat-exercises").innerText = exercises.length;
-  
-  const checkboxes = document.querySelectorAll('.round-checkbox');
-  const total = checkboxes.length;
-  const done = document.querySelectorAll('.round-checkbox:checked').length;
-  const percent = total ? Math.round((done / total) * 100) : 0;
-  document.getElementById("share-stat-progress").innerText = `${percent}%`;
-  
+  const mapContainer = document.getElementById("share-map-container");
+  if (currentWorkout === "Cardio") {
+    document.getElementById("share-workout-title").innerText = "CARDIO OUTDOOR";
+    mapContainer.style.display = "block";
+    drawRoute("share-route-canvas", cardioData.positions);
+    document.getElementById("share-stat-exercises").innerText = `${cardioData.distance.toFixed(2)} km`;
+    document.querySelector("#share-stat-exercises").parentElement.querySelector(".share-stat-lbl").innerText = "Distância";
+    document.getElementById("share-stat-progress").innerText = document.getElementById("cardio-duration").innerText;
+    document.querySelector("#share-stat-progress").parentElement.querySelector(".share-stat-lbl").innerText = "Duração";
+  } else {
+    document.getElementById("share-workout-title").innerText = `TREINO ${currentWorkout}`;
+    mapContainer.style.display = "none";
+    const exercises = workouts[currentWorkout] || [];
+    document.getElementById("share-stat-exercises").innerText = exercises.length;
+    document.querySelector("#share-stat-exercises").parentElement.querySelector(".share-stat-lbl").innerText = "Exercícios";
+    const checkboxes = document.querySelectorAll('.round-checkbox');
+    const total = checkboxes.length;
+    const done = document.querySelectorAll('.round-checkbox:checked').length;
+    const percent = total ? Math.round((done / total) * 100) : 0;
+    document.getElementById("share-stat-progress").innerText = `${percent}%`;
+    document.querySelector("#share-stat-progress").parentElement.querySelector(".share-stat-lbl").innerText = "Progresso";
+  }
   document.getElementById("share-card-date").innerText = new Date().toLocaleDateString('pt-BR');
 }
 
-function sendToWhatsApp() {
-  const exercises = workouts[currentWorkout] || [];
-  if (exercises.length === 0) {
-    alert("Monte um treino antes de compartilhar!");
-    return;
+function shareActivity() {
+  if (currentWorkout !== "Cardio" && (workouts[currentWorkout] || []).length === 0) {
+    alert("Monte um treino antes de compartilhar!"); return;
   }
-
   fillShareCardData();
   const card = document.getElementById("instagram-share-card");
-  
-  html2canvas(card, { 
-    scale: 1, 
-    logging: false, 
-    useCORS: true, 
-    backgroundColor: "#0e0e12" 
-  }).then(canvas => {
+  html2canvas(card, { scale: 1, logging: false, useCORS: true, backgroundColor: "#0e0e12" }).then(canvas => {
     canvas.toBlob(blob => {
-      const file = new File([blob], `treino_${currentWorkout}.png`, { type: "image/png" });
-      
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({
-          files: [file],
-          title: `Treino ${currentWorkout} Concluído`,
-          text: 'Mais um pago no Status! 🔥 #PowerFit'
-        });
-      } else {
-        const link = document.createElement('a');
-        link.download = `meu_treino_${currentWorkout}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-        alert("Imagem baixada! Agora você já pode postar no seu Status do WhatsApp! 🏋️‍♂️");
-      }
-    }, "image/png");
-  });
-}
+      const nomeArquivo = currentWorkout === "Cardio" ? "meu_cardio.png" : `treino_${currentWorkout}.png`;
+      const file = new File([blob], nomeArquivo, { type: "image/png" });
+      const textoMensagem = currentWorkout === "Cardio" ? 'Cardio concluído! 🏃‍♂️🔥 #PowerFit' : `Treino ${currentWorkout} pago! 🏋️‍♂️💪 #PowerFit`;
 
-function shareToInstagram() {
-  const exercises = workouts[currentWorkout] || [];
-  if (exercises.length === 0) {
-    alert("Monte um treino antes de compartilhar!");
-    return;
-  }
-
-  fillShareCardData();
-  const card = document.getElementById("instagram-share-card");
-  
-  html2canvas(card, { 
-    scale: 1, 
-    logging: false, 
-    useCORS: true, 
-    backgroundColor: "#0e0e12" 
-  }).then(canvas => {
-    canvas.toBlob(blob => {
-      const file = new File([blob], `treino_${currentWorkout}.png`, { type: "image/png" });
-      
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        navigator.share({
-          files: [file],
-          title: `Treino ${currentWorkout} Concluído`,
-          text: 'Foco no objetivo! 🔥 #PowerFit'
-        });
+        navigator.share({ files: [file], title: 'PowerFit', text: textoMensagem }).catch(() => {});
       } else {
-        const link = document.createElement('a');
-        link.download = `meu_treino_${currentWorkout}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-        alert("Imagem baixada! Agora você já pode postar nos seus Stories do Instagram! 🏋️‍♂️");
+        const link = document.createElement('a'); link.download = nomeArquivo; link.href = canvas.toDataURL("image/png"); link.click();
+        alert("Imagem baixada! Agora você pode postá-la nas suas redes sociais! 🚀");
       }
     }, "image/png");
   });
@@ -374,29 +412,23 @@ function renderHistory() {
   
   document.getElementById("exercise-list").style.display = "none";
   document.getElementById("btn-add").style.display = "none";
-  
-  // Esconde os botões inferiores para não gerar confusão visual no histórico
+  document.getElementById("cardio-panel").style.display = "none";
   document.querySelector(".buttons-group").style.display = "none"; 
-  
   container.style.display = "block";
 
   document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
   document.getElementById("btn-tab-Hist").classList.add("active");
 
   container.innerHTML = "<h3>📜 Histórico de Treinos</h3>";
-  if(history.length === 0) {
-    container.innerHTML += "<p>Nenhum treino salvo ainda.</p>";
-    return;
-  }
+  if(history.length === 0) { container.innerHTML += "<p>Nenhum treino salvo ainda.</p>"; return; }
 
   history.slice().reverse().forEach((h, index) => {
     const originalIndex = history.length - 1 - index; 
     const dateStr = new Date(h.timestamp).toLocaleDateString();
-    
     container.innerHTML += `
-      <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 3px solid silver; position: relative;">
+      <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 3px solid #fd7e14; position: relative;">
         <button class="delete-btn" onclick="deleteHistoryItem(${originalIndex})" style="top: 12px; right: 12px;">✖</button>
-        <strong>${dateStr} - Treino ${h.type || ''}</strong>
+        <strong>${dateStr} - ${h.type || ''}</strong>
         <p style="white-space: pre-line; margin: 8px 0 0 0; font-size: 0.9em; color: #ccc;">${h.text}</p>
       </div>
     `;
@@ -404,31 +436,19 @@ function renderHistory() {
 }
 
 function deleteHistoryItem(index) {
-  if (confirm("Deseja apagar este treino do histórico?")) {
+  if (confirm("Deseja apagar este registro do histórico?")) {
     let history = JSON.parse(localStorage.getItem("history")) || [];
-    history.splice(index, 1);
-    localStorage.setItem("history", JSON.stringify(history));
-    
-    renderHistory();
-    updateDashboard();
+    history.splice(index, 1); localStorage.setItem("history", JSON.stringify(history));
+    renderHistory(); updateDashboard();
   }
 }
 
 function updateDashboard() {
   let history = JSON.parse(localStorage.getItem("history")) || [];
-  const umDiaEmMs = 1000 * 60 * 60 * 24;
-  const agora = Date.now();
-
-  const weekly = history.filter(h => {
-    const diffDays = (agora - h.timestamp) / umDiaEmMs;
-    return diffDays <= 7;
-  });
-
+  const weekly = history.filter(h => (Date.now() - h.timestamp) / (1000 * 60 * 60 * 24) <= 7);
   document.getElementById("weekly-progress").innerText = `Treinos concluídos na semana: ${weekly.length}`;
-  
   if (history.length > 0) {
-    const ultimaData = new Date(history[history.length - 1].timestamp).toLocaleDateString();
-    document.getElementById("last-workout").innerText = `Último treino: ${ultimaData}`;
+    document.getElementById("last-workout").innerText = `Último treino: ${new Date(history[history.length - 1].timestamp).toLocaleDateString()}`;
   } else {
     document.getElementById("last-workout").innerText = `Último treino: nenhum`;
   }
@@ -440,30 +460,20 @@ function updateDashboard() {
 function initServiceWorker(userId) {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").then(reg => {
-      console.log("Service Worker ativo.");
-      
       if (Notification.permission === "default") {
-        Notification.requestPermission().then(permission => {
-          if (permission === "granted") {
-            subscribeUserToPush(reg, userId);
-          }
-        });
+        Notification.requestPermission().then(perm => { if (perm === "granted") subscribeUserToPush(reg, userId); });
       } else if (Notification.permission === "granted") {
         subscribeUserToPush(reg, userId);
       }
-    }).catch(err => console.error("Erro SW:", err));
+    }).catch(err => console.error(err));
   }
 }
 
 function subscribeUserToPush(reg, userId) {
   reg.pushManager.getSubscription().then(sub => {
     if (!sub) {
-      reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: "SUA_PUBLIC_KEY_AQUI" 
-      }).then(subscription => {
-        sendSubscriptionToServer(subscription, userId);
-      });
+      reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: "SUA_PUBLIC_KEY_AQUI" })
+         .then(subscription => sendSubscriptionToServer(subscription, userId));
     } else {
       sendSubscriptionToServer(sub, userId);
     }
@@ -472,16 +482,6 @@ function subscribeUserToPush(reg, userId) {
 
 function sendSubscriptionToServer(subscription, userId) {
   const url = window.location.hostname === "localhost" ? "http://localhost:3000" : "";
-  
-  fetch(`${url}/subscribe`, {
-    method: "POST",
-    body: JSON.stringify({ userId: userId, subscription: subscription }),
-    headers: { "Content-Type": "application/json" }
-  }).catch(e => console.log("Servidor offline: Rodando em modo local seguro."));
-
-  fetch(`${url}/updateAccess`, {
-    method: "POST",
-    body: JSON.stringify({ userId: userId }),
-    headers: { "Content-Type": "application/json" }
-  }).catch(e => {});
+  fetch(`${url}/subscribe`, { method: "POST", body: JSON.stringify({ userId, subscription }), headers: { "Content-Type": "application/json" } }).catch(() => {});
+  fetch(`${url}/updateAccess`, { method: "POST", body: JSON.stringify({ userId }), headers: { "Content-Type": "application/json" } }).catch(() => {});
 }
