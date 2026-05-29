@@ -5,11 +5,12 @@ let workouts = { A: [], B: [], C: [] };
 let currentWorkout = "A";
 let countdownInterval = null;
 
-// VARIÁVEIS RASTREADOR CARDIO E PERCURSO
+// VARIÁVEIS RASTREADOR CARDIO E PERCURSO (RESILIENTES A TELA DESLIGADA)
 let cardioInterval = null;
 let watchId = null;
 let cardioActive = false;
-let cardioData = { distance: 0, seconds: 0, positions: [] };
+let wakeLock = null;
+let cardioData = { distance: 0, startTime: null, elapsedSeconds: 0, positions: [] };
 
 // ==========================================
 // INICIALIZAÇÃO DO APLICATIVO
@@ -23,6 +24,14 @@ window.onload = function() {
   initServiceWorker(userId);
   
   clearCanvas("cardio-route-canvas");
+
+  // Recupera estado caso o app tenha fechado acidentalmente no meio do cardio
+  if (localStorage.getItem("cardioActive") === "true") {
+    restoreCardioTracking();
+  }
+
+  // Escuta quando a página volta a ficar visível para atualizar o cronômetro instantaneamente
+  document.addEventListener("visibilitychange", handleVisibilityChange);
 };
 
 function getOrCreateUserId() {
@@ -229,7 +238,12 @@ function generateWorkout() {
 function confirmReset() {
   if (confirm("Tem certeza que deseja redefinir a atividade atual?")) {
     if(currentWorkout === "Cardio") {
-      cardioData = { distance: 0, seconds: 0, positions: [] };
+      stopCardioTrackingEngine();
+      cardioData = { distance: 0, startTime: null, elapsedSeconds: 0, positions: [] };
+      localStorage.removeItem("cardioActive");
+      localStorage.removeItem("cardioStartTime");
+      localStorage.removeItem("cardioPositions");
+      localStorage.removeItem("cardioDistance");
       document.getElementById("cardio-distance").innerText = "0.00";
       document.getElementById("cardio-duration").innerText = "00:00";
       document.getElementById("cardio-speed").innerText = "0.0";
@@ -254,62 +268,145 @@ function checkInactivity() {
 }
 
 // ==========================================
-// RASTREAMENTO DE CARDIO (GPS + CANVAS)
+// RASTREAMENTO DE CARDIO ESCALÁVEL (SISTEMA DE HORÁRIO REAL ANCORADO)
 // ==========================================
 function toggleCardioTracking() {
-  const btn = document.getElementById("btn-toggle-cardio");
   if (!cardioActive) {
     if (!navigator.geolocation) { alert("Seu aparelho não suporta GPS!"); return; }
     
     cardioActive = true;
-    cardioData = { distance: 0, seconds: 0, positions: [] };
+    cardioData.startTime = Date.now();
+    cardioData.distance = 0;
+    cardioData.positions = [];
+    cardioData.elapsedSeconds = 0;
+    
+    // Salva âncoras no armazenamento persistente para proteção contra fechamentos
+    localStorage.setItem("cardioActive", "true");
+    localStorage.setItem("cardioStartTime", cardioData.startTime.toString());
+    localStorage.setItem("cardioPositions", JSON.stringify([]));
+    localStorage.setItem("cardioDistance", "0");
+
     document.getElementById("cardio-distance").innerText = "0.00";
     document.getElementById("cardio-duration").innerText = "00:00";
     document.getElementById("cardio-speed").innerText = "0.0";
     clearCanvas("cardio-route-canvas");
     
-    btn.innerText = "⏹ Finalizar e Salvar Atividade";
-    btn.classList.add("active");
-    
-    cardioInterval = setInterval(() => {
-      cardioData.seconds++;
-      const mins = Math.floor(cardioData.seconds / 60).toString().padStart(2, '0');
-      const secs = (cardioData.seconds % 60).toString().padStart(2, '0');
-      document.getElementById("cardio-duration").innerText = `${mins}:${secs}`;
-      if (cardioData.distance > 0) {
-        const hours = cardioData.seconds / 3600;
-        document.getElementById("cardio-speed").innerText = (cardioData.distance / hours).toFixed(1);
-      }
-    }, 1000);
-    
-    watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        const newPos = { lat: latitude, lng: longitude };
-        if (cardioData.positions.length > 0) {
-          const lastPos = cardioData.positions[cardioData.positions.length - 1];
-          const distIncrement = calculateDistance(lastPos.lat, lastPos.lng, newPos.lat, newPos.lng);
-          if (distIncrement > 0.001) { 
-            cardioData.distance += distIncrement;
-            document.getElementById("cardio-distance").innerText = cardioData.distance.toFixed(2);
-          }
-        }
-        cardioData.positions.push(newPos);
-        drawRoute("cardio-route-canvas", cardioData.positions);
-      },
-      (err) => console.log(err), { enableHighAccuracy: true, distanceFilter: 1 }
-    );
+    startCardioTrackingEngine();
+    requestWakeLock();
   } else {
-    cardioActive = false; btn.innerText = "▶ Iniciar Atividade"; btn.classList.remove("active");
-    clearInterval(cardioInterval); if (watchId) navigator.geolocation.clearWatch(watchId);
+    cardioActive = false;
+    localStorage.removeItem("cardioActive");
+    localStorage.removeItem("cardioStartTime");
+    localStorage.removeItem("cardioPositions");
+    localStorage.removeItem("cardioDistance");
+
+    const btn = document.getElementById("btn-toggle-cardio");
+    btn.innerText = "▶ Iniciar Atividade";
+    btn.classList.remove("active");
+    
+    stopCardioTrackingEngine();
+    releaseWakeLock();
     
     const durationText = document.getElementById("cardio-duration").innerText;
     const finalDistance = cardioData.distance.toFixed(2);
     const avgSpeed = document.getElementById("cardio-speed").innerText;
     
     const summary = `Distância: ${finalDistance} km\nDuração: ${durationText}\nVelocidade Média: ${avgSpeed} km/h`;
-    saveHistory(summary, "CARDIO 🏃‍♂️"); updateDashboard();
+    saveHistory(summary, "CARDIO 🏃‍♂️"); 
+    updateDashboard();
     alert("Cardio salvo com sucesso! Pronto para postar.");
+  }
+}
+
+function startCardioTrackingEngine() {
+  const btn = document.getElementById("btn-toggle-cardio");
+  btn.innerText = "⏹ Finalizar e Salvar Atividade";
+  btn.classList.add("active");
+
+  // Motor do loop temporal ancorado no relógio do sistema (independente de travamentos)
+  cardioInterval = setInterval(() => {
+    if (!cardioData.startTime) return;
+    
+    // Calcula os segundos exatos passados de forma absoluta matemática
+    cardioData.elapsedSeconds = Math.floor((Date.now() - cardioData.startTime) / 1000);
+    
+    const mins = Math.floor(cardioData.elapsedSeconds / 60).toString().padStart(2, '0');
+    const secs = (cardioData.elapsedSeconds % 60).toString().padStart(2, '0');
+    document.getElementById("cardio-duration").innerText = `${mins}:${secs}`;
+    
+    if (cardioData.distance > 0 && cardioData.elapsedSeconds > 0) {
+      const hours = cardioData.elapsedSeconds / 3600;
+      document.getElementById("cardio-speed").innerText = (cardioData.distance / hours).toFixed(1);
+    }
+  }, 1000);
+
+  // Escuta ativa do GPS por WatchPosition
+  watchId = navigator.geolocation.watchPosition(
+    (position) => {
+      const { latitude, longitude } = position.coords;
+      const newPos = { lat: latitude, lng: longitude };
+      
+      if (cardioData.positions.length > 0) {
+        const lastPos = cardioData.positions[cardioData.positions.length - 1];
+        const distIncrement = calculateDistance(lastPos.lat, lastPos.lng, newPos.lat, newPos.lng);
+        
+        // Ignora pequenos ruídos estáticos de sinal GPS abaixo de 1 metro
+        if (distIncrement > 0.001) { 
+          cardioData.distance += distIncrement;
+          document.getElementById("cardio-distance").innerText = cardioData.distance.toFixed(2);
+          localStorage.setItem("cardioDistance", cardioData.distance.toString());
+        }
+      }
+      cardioData.positions.push(newPos);
+      localStorage.setItem("cardioPositions", JSON.stringify(cardioData.positions));
+      drawRoute("cardio-route-canvas", cardioData.positions);
+    },
+    (err) => console.log("Erro de GPS capturado:", err), 
+    { enableHighAccuracy: true, distanceFilter: 1 }
+  );
+}
+
+function stopCardioTrackingEngine() {
+  clearInterval(cardioInterval);
+  if (watchId) navigator.geolocation.clearWatch(watchId);
+}
+
+function restoreCardioTracking() {
+  cardioActive = true;
+  cardioData.startTime = parseInt(localStorage.getItem("cardioStartTime"));
+  cardioData.distance = parseFloat(localStorage.getItem("cardioDistance")) || 0;
+  cardioData.positions = JSON.parse(localStorage.getItem("cardioPositions")) || [];
+  
+  document.getElementById("cardio-distance").innerText = cardioData.distance.toFixed(2);
+  drawRoute("cardio-route-canvas", cardioData.positions);
+  
+  switchWorkout("Cardio");
+  startCardioTrackingEngine();
+  requestWakeLock();
+}
+
+function handleVisibilityChange() {
+  // Executa recalibração imediata quando o usuário acorda a tela do telefone
+  if (document.visibilityState === "visible" && cardioActive) {
+    if (cardioData.startTime) {
+      cardioData.elapsedSeconds = Math.floor((Date.now() - cardioData.startTime) / 1000);
+    }
+    requestWakeLock();
+  }
+}
+
+// Mantém a tela ligada em navegadores compatíveis (Evita suspensão agressiva de hardware)
+async function requestWakeLock() {
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+    } catch (err) { console.log("WakeLock não pôde ser ativado."); }
+  }
+}
+
+function releaseWakeLock() {
+  if (wakeLock !== null) {
+    wakeLock.release().then(() => wakeLock = null);
   }
 }
 
@@ -352,7 +449,7 @@ function clearCanvas(canvasId) {
 function fillShareCardData() {
   const mapContainer = document.getElementById("share-map-container");
   if (currentWorkout === "Cardio") {
-    document.getElementById("share-workout-title").innerText = "DIA DE CARDIO";
+    document.getElementById("share-workout-title").innerText = "CARDIO OUTDOOR";
     mapContainer.style.display = "block";
     drawRoute("share-route-canvas", cardioData.positions);
     document.getElementById("share-stat-exercises").innerText = `${cardioData.distance.toFixed(2)} km`;
