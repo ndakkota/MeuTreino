@@ -61,6 +61,17 @@
         </div>
       </div>
       
+      <div class="cardio-sub-stats" style="margin-top: -5px;">
+        <div class="cardio-mini-box">
+          <span id="cardio-steps">0</span>
+          <label>Passos</label>
+        </div>
+        <div class="cardio-mini-box">
+          <span id="cardio-calories">0</span>
+          <label>Kcal Estimadas</label>
+        </div>
+      </div>
+      
       <div class="cardio-map-wrapper">
         <canvas id="cardio-route-canvas" width="300" height="180"></canvas>
       </div>
@@ -109,11 +120,11 @@
       <div class="share-stats-row">
         <div class="share-stat-box">
           <span class="share-stat-val" id="share-stat-exercises">0</span>
-          <span class="share-stat-lbl">Exercícios</span>
+          <span class="share-stat-lbl" id="share-lbl-exercises">Exercícios</span>
         </div>
         <div class="share-stat-box">
           <span class="share-stat-val" id="share-stat-progress">0%</span>
-          <span class="share-stat-lbl">Progresso</span>
+          <span class="share-stat-lbl" id="share-lbl-progress">Progresso</span>
         </div>
       </div>
     </div>
@@ -129,4 +140,4 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="app.js"></script>
 </body>
-</html> 
+</html>
