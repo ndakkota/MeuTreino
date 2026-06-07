@@ -5,7 +5,7 @@ let workouts = { A: [], B: [], C: [] };
 let currentWorkout = "A";
 let countdownInterval = null;
 
-// VARIÁVEIS RASTREADOR CARDIO, PERCURSO E SENSORES (METRICAS PREMIUM)
+// VARIÁVEIS RASTREADOR CARDIO, PERCURSO E SENSORES
 let cardioInterval = null;
 let watchId = null;
 let cardioActive = false;
@@ -13,7 +13,7 @@ let wakeLock = null;
 
 // Parâmetros do Acelerômetro para Filtro de Passos
 let lastAcceleration = { x: 0, y: 0, z: 0 };
-let stepThreshold = 11.5; // Limiar de impacto para registrar uma passada
+let stepThreshold = 11.5; 
 let lastStepTime = 0;
 
 let cardioData = { 
@@ -284,13 +284,12 @@ function checkInactivity() {
 }
 
 // ==========================================
-// RASTREAMENTO DE CARDIO AVANÇADO (GPS + CALORIAS + PASSOS NATIVOS)
+// RASTREAMENTO DE CARDIO (GPS + PASSOS + KCAL)
 // ==========================================
 function toggleCardioTracking() {
   if (!cardioActive) {
     if (!navigator.geolocation) { alert("Seu aparelho não suporta GPS!"); return; }
     
-    // Solicita permissão para o acelerômetro se necessário (obrigatório em iOS modernos)
     if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
       DeviceMotionEvent.requestPermission()
         .then(permissionState => {
@@ -343,12 +342,11 @@ function toggleCardioTracking() {
     
     const durationText = document.getElementById("cardio-duration").innerText;
     const finalDistance = cardioData.distance.toFixed(2);
-    const avgSpeed = document.getElementById("cardio-speed").innerText;
     
     const summary = `Distância: ${finalDistance} km\nDuração: ${durationText}\nPassos: ${cardioData.steps}\nGasto Calórico: ${cardioData.calories} kcal`;
     saveHistory(summary, "CARDIO 🏃‍♂️"); 
     updateDashboard();
-    alert("Cardio com métricas completas salvo com sucesso!");
+    alert("Cardio salvo com sucesso!");
   }
 }
 
@@ -373,12 +371,9 @@ function startCardioTrackingEngine() {
       document.getElementById("cardio-speed").innerText = speed.toFixed(1);
     }
 
-    // Algoritmo de Cálculo Metabólico de Calorias (Cálculo Baseado em METs)
-    // MET Corrida leve = 7.0 | MET Caminhada = 3.5. Peso médio padrão = 75kg
     if (cardioData.elapsedSeconds > 0) {
-      let metValue = speed > 6.5 ? 7.5 : 4.0; // Define intensidade pela velocidade atual
-      if (speed === 0) metValue = 1.2; // Repouso
-      
+      let metValue = speed > 6.5 ? 7.5 : 4.0;
+      if (speed === 0) metValue = 1.2;
       const caloriesPerSecond = (metValue * 3.5 * 75) / (200 * 60);
       cardioData.calories = Math.round(caloriesPerSecond * cardioData.elapsedSeconds);
       document.getElementById("cardio-calories").innerText = cardioData.calories;
@@ -410,25 +405,21 @@ function startCardioTrackingEngine() {
   );
 }
 
-// Algoritmo de Filtro de Impacto do Acelerômetro (Contagem de Passos)
 function handleMotion(event) {
   if (!cardioActive) return;
   const acc = event.accelerationIncludingGravity;
   if (!acc) return;
 
-  // Filtro de magnitude do vetor tridimensional de movimento
   const magnitude = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
   const delta = Math.abs(magnitude - lastAcceleration.total);
-
   const now = Date.now();
-  // Limiar de corte de impacto e antirruído de repetição involuntária rápida (mínimo 300ms por passo)
+
   if (magnitude > stepThreshold && (now - lastStepTime) > 300 && delta > 2) {
     cardioData.steps++;
     document.getElementById("cardio-steps").innerText = cardioData.steps;
     localStorage.setItem("cardioSteps", cardioData.steps.toString());
     lastStepTime = now;
   }
-
   lastAcceleration = { x: acc.x, y: acc.y, z: acc.z, total: magnitude };
 }
 
@@ -485,6 +476,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 function drawRoute(canvasId, positions) {
   const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (positions.length < 2) return;
@@ -509,22 +501,27 @@ function clearCanvas(canvasId) {
 }
 
 // ==========================================
-// COMPARTILHAMENTO UNIFICADO (SISTEMA NATIVO)
+// COMPARTILHAMENTO CUSTOMIZADO (IMAGEM)
 // ==========================================
 function fillShareCardData() {
   const mapContainer = document.getElementById("share-map-container");
+  
   if (currentWorkout === "Cardio") {
+    // Altera o título fixo solicitado
     document.getElementById("share-workout-title").innerText = "DIA DE CARDIO";
     mapContainer.style.display = "block";
     drawRoute("share-route-canvas", cardioData.positions);
     
-    // Altera rótulos dinamicamente para exibir Kcal e Passos no layout final da foto
-    document.getElementById("share-stat-exercises").innerText = `${cardioData.calories} kcal`;
-    document.getElementById("share-lbl-exercises").innerText = "Energia";
+    // Altera o primeiro bloco para exibir o Tempo
+    const durationText = document.getElementById("cardio-duration").innerText;
+    document.getElementById("share-stat-exercises").innerText = durationText;
+    document.getElementById("share-lbl-exercises").innerText = "Tempo";
     
+    // Altera o segundo bloco para exibir os Passos
     document.getElementById("share-stat-progress").innerText = cardioData.steps;
-    document.getElementById("share-lbl-progress").innerText = "Passos Totais";
+    document.getElementById("share-lbl-progress").innerText = "Passos";
   } else {
+    // Layout padrão para Musculação
     document.getElementById("share-workout-title").innerText = `TREINO ${currentWorkout}`;
     mapContainer.style.display = "none";
     const exercises = workouts[currentWorkout] || [];
@@ -551,17 +548,17 @@ function shareActivity() {
   const card = document.getElementById("instagram-share-card");
   html2canvas(card, { scale: 1, logging: false, useCORS: true, backgroundColor: "#0e0e12" }).then(canvas => {
     canvas.toBlob(blob => {
-      const nomeArquivo = currentWorkout === "Cardio" ? "meu_cardio.png" : `treino_${currentWorkout}.png`;
+      const nomeArquivo = currentWorkout === "Cardio" ? "dia_de_cardio.png" : `treino_${currentWorkout}.png`;
       const file = new File([blob], nomeArquivo, { type: "image/png" });
       const textoMensagem = currentWorkout === "Cardio" 
-        ? `Cardio pago! Corri ${cardioData.distance.toFixed(2)}km e queimei ${cardioData.calories}kcal! 🔥 #PowerFit` 
+        ? `Dia de cardio concluído! 🔥 Rumei aos objetivos. #PowerFit` 
         : `Treino ${currentWorkout} pago! 🏋️‍♂️💪 #PowerFit`;
 
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         navigator.share({ files: [file], title: 'PowerFit', text: textoMensagem }).catch(() => {});
       } else {
         const link = document.createElement('a'); link.download = nomeArquivo; link.href = canvas.toDataURL("image/png"); link.click();
-        alert("Imagem baixada! Agora você pode postá-la nas suas redes sociais! 🚀");
+        alert("Imagem do seu cardio salva! Agora é só postar! 🚀");
       }
     }, "image/png");
   });
