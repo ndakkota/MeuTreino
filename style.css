@@ -77,6 +77,9 @@ header {
 .dashboard p { margin: 4px 0; font-size: 0.9em; color: #a1a1aa; }
 #motivational { font-style: italic; color: #fd7e14; margin-top: 8px !important; font-weight: 500; }
 
+/* ==========================================
+ * BARRA DE ABAS COM DIVISÓRIAS DISCRETAS
+ * ========================================== */
 .tabs {
   display: flex;
   background: #141417;
@@ -98,8 +101,22 @@ header {
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
+  
+  /* Cria a divisória fina e discreta à direita */
+  border-right: 1px solid rgba(255, 255, 255, 0.08); 
 }
-.tabs button.active { background: #27272a; color: #fff; }
+
+/* Remove a linha divisória do último botão para o visual ficar perfeito */
+.tabs button:last-child {
+  border-right: none;
+}
+
+/* Esconde a divisória do botão que está selecionado ou com o dedo encostado */
+.tabs button.active, .tabs button:active { 
+  background: #27272a; 
+  color: #fff; 
+  border-right-color: transparent; 
+}
 
 .container { width: 90%; max-width: 450px; }
 .exercise {
