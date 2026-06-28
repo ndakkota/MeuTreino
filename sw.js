@@ -1,20 +1,52 @@
-self.addEventListener("install", event => {
-  console.log("Service Worker instalado.");
-  self.skipWaiting();
-});
+const CACHE_NAME = 'powerfit-v1';
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/style.css',
+  '/app.js',
+  '/manifest.json',
+  '/icons/icon-192x192.png'
+];
 
-self.addEventListener("activate", event => {
-  console.log("Service Worker ativado.");
-});
-
-// Recebe push do servidor
-self.addEventListener("push", event => {
-  const data = event.data ? event.data.json() : { title: "PowerFit", body: "Você está há 2 dias sem treinar!" };
+// Instalação do Cache
+self.addEventListener('install', event => {
   event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      icon: "icon-192.png",
-      badge: "icon-192.png"
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(ASSETS);
+    })
+  );
+});
+
+// Ativação do Service Worker
+self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim());
+});
+
+// Estratégia Fetch (Network First com Fallback para Cache)
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    fetch(event.request).catch(() => {
+      return caches.match(event.request);
+    })
+  );
+});
+
+// Ouvir evento de clique na Notificação do Celular
+self.addEventListener('notificationclick', event => {
+  event.notification.close(); // Fecha o popup
+  
+  // Abre o aplicativo ao clicar na notificação
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+      for (let i = 0; i < windowClients.length; i++) {
+        const client = windowClients[i];
+        if (client.url && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
     })
   );
 });
