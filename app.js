@@ -273,14 +273,39 @@ function confirmReset() {
   }
 }
 
+// NOTIFICAÇÃO LOCAL DE INATIVIDADE (SISTEMA MOBILE)
 function checkInactivity() {
   const lastAccess = localStorage.getItem("lastAccess");
   const now = Date.now();
   if (lastAccess) {
     const diffDays = Math.floor((now - parseInt(lastAccess)) / (1000 * 60 * 60 * 24));
-    if (diffDays >= 2) alert("⚠️ Você está há " + diffDays + " dias sem treinar! Bora focar!");
+    if (diffDays >= 2) {
+      // Disparar popup nativo do sistema do celular
+      if ("Notification" in window) {
+        if (Notification.permission === "granted") {
+          showInactivityNotification(diffDays);
+        } else if (Notification.permission !== "denied") {
+          Notification.requestPermission().then(permission => {
+            if (permission === "granted") showInactivityNotification(diffDays);
+          });
+        }
+      }
+    }
   }
   localStorage.setItem("lastAccess", now);
+}
+
+function showInactivityNotification(days) {
+  navigator.serviceWorker.ready.then(registration => {
+    registration.showNotification("POWERFIT ⚡", {
+      body: `⚠️ Você está há ${days} dias sem treinar! Bora focar e pagar o treino de hoje!`,
+      icon: "icons/icon-192x192.png", // Altere para o caminho do seu ícone se necessário
+      badge: "icons/icon-192x192.png",
+      vibrate: [200, 100, 200],
+      tag: "inactivity-alert",
+      renotify: true
+    });
+  });
 }
 
 // ==========================================
@@ -507,21 +532,17 @@ function fillShareCardData() {
   const mapContainer = document.getElementById("share-map-container");
   
   if (currentWorkout === "Cardio") {
-    // Altera o título fixo solicitado
     document.getElementById("share-workout-title").innerText = "DIA DE CARDIO";
     mapContainer.style.display = "block";
     drawRoute("share-route-canvas", cardioData.positions);
     
-    // Altera o primeiro bloco para exibir o Tempo
     const durationText = document.getElementById("cardio-duration").innerText;
     document.getElementById("share-stat-exercises").innerText = durationText;
     document.getElementById("share-lbl-exercises").innerText = "Tempo";
     
-    // Altera o segundo bloco para exibir os Passos
     document.getElementById("share-stat-progress").innerText = cardioData.steps;
     document.getElementById("share-lbl-progress").innerText = "Passos";
   } else {
-    // Layout padrão para Musculação
     document.getElementById("share-workout-title").innerText = `TREINO ${currentWorkout}`;
     mapContainer.style.display = "none";
     const exercises = workouts[currentWorkout] || [];
