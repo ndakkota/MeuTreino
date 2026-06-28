@@ -81,14 +81,13 @@
   </div>
 
   <div id="progress">Progresso: 0% concluído</div>
-  <div id="output"></div>
 
   <div class="buttons-group">
     <button class="main" id="btn-add" onclick="addExercise()">+ Adicionar Exercício</button>
-    <button class="main" onclick="generateWorkout()">📋 Concluir e Gerar Treino</button>
+    <button class="main btn-conclude" onclick="generateWorkout()">📋 Concluir e Gerar Treino</button>
     
     <div class="action-row">
-      <button class="main reset-layout-btn" onclick="confirmReset()">🔄 Resetar Treino</button>
+      <button class="reset-layout-btn" onclick="confirmReset()">🔄 Resetar Treino</button>
       
       <button class="share-main-btn" onclick="shareActivity()" title="Compartilhar nas Redes Sociais">
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px; fill: #fff;">
@@ -98,6 +97,8 @@
       </button>
     </div>
   </div>
+
+  <div id="output"></div>
 
   <div id="instagram-share-card" class="share-card-hidden">
     <div class="share-card-header">
