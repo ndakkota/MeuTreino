@@ -6,7 +6,7 @@ body {
   background-color: #0a0a0c;
   color: #f4f4f5;
   margin: 0;
-  padding: 0 0 100px 0;
+  padding: 0 0 120px 0; /* Aumentado para dar espaço aos botões fixos se necessário */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -101,17 +101,11 @@ header {
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
-  
-  /* Cria a divisória fina e discreta à direita */
   border-right: 1px solid rgba(255, 255, 255, 0.08); 
 }
-
-/* Remove a linha divisória do último botão para o visual ficar perfeito */
 .tabs button:last-child {
   border-right: none;
 }
-
-/* Esconde a divisória do botão que está selecionado ou com o dedo encostado */
 .tabs button.active, .tabs button:active { 
   background: #27272a; 
   color: #fff; 
@@ -168,7 +162,8 @@ header {
 }
 .delete-btn:hover { color: #ef4444; }
 
-#progress { font-weight: 700; color: #a1a1aa; font-size: 0.9em; margin: 10px 0; }
+#progress { font-weight: 700; color: #a1a1aa; font-size: 0.9em; margin: 15px 0 5px 0; text-align: center; }
+
 #output {
   background: rgba(253, 126, 20, 0.05);
   border: 1px dashed rgba(253, 126, 20, 0.3);
@@ -180,25 +175,103 @@ header {
 #output h3 { margin: 0 0 8px 0; color: #fd7e14; font-size: 1.1em; }
 #output p { margin: 4px 0; font-size: 0.9em; color: #e4e4e7; }
 
-.buttons-group { width: 90%; max-width: 450px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px; }
-button.main {
-  width: 100%; background: #fff; color: #000; border: none;
-  padding: 14px 0; border-radius: 12px; font-weight: 700;
-  font-size: 0.95em; cursor: pointer; box-sizing: border-box;
+/* ==========================================
+ * ÁREA DE BOTÕES REMODELADA (ZONA DE SEGURANÇA)
+ * ========================================== */
+.buttons-group { 
+  width: 90%; 
+  max-width: 450px; 
+  display: flex; 
+  flex-direction: column; 
+  box-sizing: border-box;
+  margin-top: 5px;
 }
-button#btn-add { background: #141417; color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); }
 
-.action-row { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
-.action-row .reset-layout-btn { flex: 1; margin: 0; background: #27272a; color: #fff; }
+/* Botão Adicionar (Secundário, visual vazado e limpo) */
+button.main#btn-add { 
+  background: transparent; 
+  color: #fd7e14; 
+  border: 2px dashed rgba(253, 126, 20, 0.4); 
+  padding: 14px 0;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.95em;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease;
+  margin-bottom: 25px; /* DISTÂNCIA DE SEGURANÇA CRÍTICA */
+}
+button.main#btn-add:active {
+  background: rgba(253, 126, 20, 0.1);
+  border-color: #fd7e14;
+}
 
-/* Botão Único de Compartilhamento Unificado */
+/* Botão Concluir (Principal, bloco sólido imponente) */
+button.main.btn-conclude {
+  width: 100%; 
+  background: #ffffff; 
+  color: #000000; 
+  border: none;
+  padding: 16px 0; 
+  border-radius: 14px; 
+  font-weight: 800;
+  font-size: 1em; 
+  cursor: pointer; 
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+  margin-bottom: 15px;
+  transition: transform 0.1s ease;
+}
+button.main.btn-conclude:active {
+  transform: scale(0.98);
+  background: #e4e4e7;
+}
+
+.action-row { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 12px; 
+  width: 100%; 
+}
+
+/* Botão Resetar menor para não competir com Compartilhar */
+.action-row .reset-layout-btn { 
+  flex: 1; 
+  margin: 0; 
+  background: #18181b; 
+  color: #a1a1aa; 
+  border: 1px solid #27272a;
+  padding: 14px 0;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+.action-row .reset-layout-btn:active {
+  background: #27272a;
+  color: #ef4444;
+}
+
+/* Botão Compartilhar Destacado */
 .share-main-btn {
-  height: 50px; background: #fd7e14; border: none; border-radius: 12px;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  gap: 8px; padding: 0 20px; color: #fff; font-weight: 700; font-size: 0.95em;
-  flex: 1.2; transition: background 0.2s ease;
+  height: 48px; 
+  background: #fd7e14; 
+  border: none; 
+  border-radius: 12px;
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  gap: 8px; 
+  padding: 0 20px; 
+  color: #fff; 
+  font-weight: 700; 
+  font-size: 0.95em;
+  flex: 1.5; 
+  transition: background 0.2s ease;
 }
-.share-main-btn:hover { background: #f76707; }
+.share-main-btn:active { background: #f76707; }
 
 footer {
   position: fixed; bottom: 0; left: 0; width: 100%;
