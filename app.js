@@ -273,22 +273,33 @@ function confirmReset() {
   }
 }
 
-// NOTIFICAÇÃO LOCAL DE INATIVIDADE (SISTEMA MOBILE)
+// ==========================================
+// SISTEMA DE NOTIFICAÇÃO LOCAL DE INATIVIDADE
+// ==========================================
 function checkInactivity() {
   const lastAccess = localStorage.getItem("lastAccess");
   const now = Date.now();
+  
   if (lastAccess) {
     const diffDays = Math.floor((now - parseInt(lastAccess)) / (1000 * 60 * 60 * 24));
+    
     if (diffDays >= 2) {
-      // Disparar popup nativo do sistema do celular
-      if ("Notification" in window) {
-        if (Notification.permission === "granted") {
-          showInactivityNotification(diffDays);
-        } else if (Notification.permission !== "denied") {
+      // Caso o usuário já tenha aceito a permissão antes, dispara direto
+      if ("Notification" in window && Notification.permission === "granted") {
+        showInactivityNotification(diffDays);
+      } else if ("Notification" in window && Notification.permission === "default") {
+        // Correção de Segurança: Aguarda o primeiro toque na tela para contornar o bloqueio automático de popups
+        document.addEventListener('click', function requestOnGesture() {
           Notification.requestPermission().then(permission => {
-            if (permission === "granted") showInactivityNotification(diffDays);
+            if (permission === "granted") {
+              showInactivityNotification(diffDays);
+              // Registra o token no Push Manager agora que foi aprovado
+              const userId = localStorage.getItem("powerfit_user_id");
+              navigator.serviceWorker.ready.then(reg => subscribeUserToPush(reg, userId));
+            }
           });
-        }
+          document.removeEventListener('click', requestOnGesture);
+        }, { once: true });
       }
     }
   }
@@ -299,7 +310,7 @@ function showInactivityNotification(days) {
   navigator.serviceWorker.ready.then(registration => {
     registration.showNotification("POWERFIT ⚡", {
       body: `⚠️ Você está há ${days} dias sem treinar! Bora focar e pagar o treino de hoje!`,
-      icon: "icons/icon-192x192.png", // Altere para o caminho do seu ícone se necessário
+      icon: "icons/icon-192x192.png",
       badge: "icons/icon-192x192.png",
       vibrate: [200, 100, 200],
       tag: "inactivity-alert",
@@ -649,7 +660,7 @@ function initServiceWorker(userId) {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").then(reg => {
       if (Notification.permission === "default") {
-        Notification.requestPermission().then(perm => { if (perm === "granted") subscribeUserToPush(reg, userId); });
+        // Deixamos o fluxo para o click-handler em checkInactivity()
       } else if (Notification.permission === "granted") {
         subscribeUserToPush(reg, userId);
       }
