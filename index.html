@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PowerFit">
-  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  <link class="apple-touch-icon" rel="apple-touch-icon" href="icons/icon-192x192.png">
   
   <link rel="stylesheet" href="style.css">
   
@@ -52,19 +52,28 @@
 
       <div id="progress" class="progress-text">Progresso: 0% concluído</div>
 
-      <button id="btn-add" class="btn-secondary" onclick="addExercise()">+ Adicionar Exercício</button>
+      <button id="btn-add" onclick="addExercise()">+ Adicionar Exercício</button>
 
       <div class="buttons-group">
-        <button class="main btn-concluir" onclick="generateWorkout()">
+        
+        <button class="btn-concluir" onclick="generateWorkout()">
           📋 Concluir e Gerar Treino
         </button>
+        
         <div class="buttons-group-row">
-          <button class="btn-reset" onclick="confirmReset()" style="flex: 1;">
-            🔄 Resetar Treino
-          </button>
-          <button class="btn-share" onclick="shareActivity()" style="flex: 1.2;">
-            <span>📤</span> Compartilhar
-          </button>
+          
+          <div class="buttons-group-cell">
+            <button class="btn-reset" onclick="confirmReset()">
+              🔄 Resetar Treino
+            </button>
+          </div>
+          
+          <div class="buttons-group-cell">
+            <button class="btn-share" onclick="shareActivity()">
+              <span>📤</span> Compartilhar
+            </button>
+          </div>
+          
         </div>
       </div>
 
