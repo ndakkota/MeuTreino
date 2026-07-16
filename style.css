@@ -1,341 +1,83 @@
-/* ==========================================
- * ESTILIZAÇÃO GERAL E DESIGN SYSTEM PWA
- * ========================================== */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: #0a0a0c;
-  color: #f4f4f5;
-  margin: 0;
-  padding: 0 0 120px 0; /* Aumentado para dar espaço aos botões fixos se necessário */
+/* ==========================================================================
+   ESTILIZAÇÃO E COMPACTAÇÃO DOS BOTÕES DE AÇÃO
+   ========================================================================== */
+
+/* Afasta o botão tracejado de adicionar dos botões de ação abaixo */
+#btn-add {
+  margin-bottom: 32px !important; 
+  padding: 12px 20px;
+  font-weight: 600;
+  border-radius: 10px;
+  width: 100%;
+}
+
+/* Container principal das ações do treino */
+.buttons-group {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  overflow-x: hidden;
-  -webkit-tap-highlight-color: transparent;
+  gap: 12px; /* Espaço uniforme vertical entre o Concluir e a linha de baixo */
+  width: 100%;
+  box-sizing: border-box;
 }
 
-header {
-  background: rgba(10, 10, 12, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* Sub-container para colocar o Resetar e Compartilhar lado a lado perfeitamente */
+.buttons-group-row {
+  display: flex;
+  gap: 12px; /* Espaço entre o botão de Resetar e o de Compartilhar */
   width: 100%;
-  padding: 16px 0;
-  text-align: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
-.header-container {
+
+/* Compactação e refinamento de todos os botões de ação */
+.buttons-group button,
+.buttons-group button.main {
+  padding: 12px 16px !important; /* Altura menor e mais elegante (antes costumava ser 16px+) */
+  font-size: 0.95rem !important; /* Fonte ligeiramente menor para equilibrar com o novo tamanho */
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  font-weight: 900;
-  font-size: 1.4em;
-  letter-spacing: 1px;
-}
-.brand-icon { width: 28px; height: 28px; }
-.accent-text { color: #fd7e14; }
-
-.timer-banner {
-  background: linear-gradient(135deg, #fd7e14 0%, #f76707 100%);
-  color: #fff;
-  width: 90%;
-  max-width: 450px;
-  padding: 12px 20px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 8px 24px rgba(253, 126, 20, 0.3);
-  margin-top: 15px;
-  box-sizing: border-box;
-  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.timer-label { font-weight: 700; font-size: 0.9em; letter-spacing: 0.5px; }
-#timer-countdown { font-size: 1.3em; font-weight: 900; }
-.timer-skip-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none; color: white;
-  padding: 6px 14px; border-radius: 8px;
-  font-weight: 700; cursor: pointer;
-  transition: background 0.2s;
-}
-
-.dashboard {
-  background: #141417;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  padding: 16px;
-  width: 90%;
-  max-width: 450px;
-  margin-top: 20px;
+  gap: 8px;
+  transition: background 0.2s ease, transform 0.1s ease;
   box-sizing: border-box;
 }
-.dashboard h2 { margin: 0 0 10px 0; font-size: 1.1em; font-weight: 800; color: #fff; }
-.dashboard p { margin: 4px 0; font-size: 0.9em; color: #a1a1aa; }
-#motivational { font-style: italic; color: #fd7e14; margin-top: 8px !important; font-weight: 500; }
 
-/* ==========================================
- * BARRA DE ABAS COM DIVISÓRIAS DISCRETAS
- * ========================================== */
-.tabs {
-  display: flex;
-  background: #141417;
-  padding: 4px;
-  border-radius: 12px;
-  margin: 20px 0;
-  width: 90%;
-  max-width: 450px;
-  box-sizing: border-box;
-}
-.tabs button {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: #a1a1aa;
-  padding: 10px 0;
-  font-weight: 700;
-  font-size: 0.85em;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border-right: 1px solid rgba(255, 255, 255, 0.08); 
-}
-.tabs button:last-child {
-  border-right: none;
-}
-.tabs button.active, .tabs button:active { 
-  background: #27272a; 
-  color: #fff; 
-  border-right-color: transparent; 
-}
-
-.container { width: 90%; max-width: 450px; }
-.exercise {
-  background: #141417;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 16px;
-  margin-bottom: 14px;
-  border-radius: 16px;
-  position: relative;
-  box-sizing: border-box;
-  animation: fadeIn 0.2s ease;
-}
-.exercise label {
-  display: block;
-  font-size: 0.8em;
-  color: #71717a;
-  font-weight: 700;
-  text-transform: uppercase;
-  margin-top: 8px;
-  letter-spacing: 0.5px;
-}
-.exercise input[type=text], .exercise input[type=number] {
-  width: 100%;
-  background: #202024;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  color: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  margin-top: 4px;
-  box-sizing: border-box;
-  font-size: 0.95em;
-  font-weight: 600;
-}
-
-.series-container { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-.round-checkbox {
-  -webkit-appearance: none; appearance: none;
-  width: 28px; height: 28px;
-  border: 2px solid #3f3f46; border-radius: 50%;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-}
-.round-checkbox:checked { background-color: #fd7e14; border-color: #fd7e14; }
-.round-checkbox:checked::after { content: "✓"; color: #fff; font-weight: 900; font-size: 0.85em; }
-
-.delete-btn {
-  position: absolute; top: 14px; right: 14px;
-  background: transparent; border: none; color: #71717a;
-  font-size: 1.1em; cursor: pointer;
-}
-.delete-btn:hover { color: #ef4444; }
-
-#progress { font-weight: 700; color: #a1a1aa; font-size: 0.9em; margin: 15px 0 5px 0; text-align: center; }
-
-#output {
-  background: rgba(253, 126, 20, 0.05);
-  border: 1px dashed rgba(253, 126, 20, 0.3);
-  padding: 14px; border-radius: 12px;
-  width: 90%; max-width: 450px;
-  box-sizing: border-box; margin-bottom: 20px;
-  display: none;
-}
-#output h3 { margin: 0 0 8px 0; color: #fd7e14; font-size: 1.1em; }
-#output p { margin: 4px 0; font-size: 0.9em; color: #e4e4e7; }
-
-/* ==========================================
- * ÁREA DE BOTÕES REMODELADA (ZONA DE SEGURANÇA)
- * ========================================== */
-.buttons-group { 
-  width: 90%; 
-  max-width: 450px; 
-  display: flex; 
-  flex-direction: column; 
-  box-sizing: border-box;
-  margin-top: 5px;
-}
-
-/* Botão Adicionar (Secundário, visual vazado e limpo) */
-button.main#btn-add { 
-  background: transparent; 
-  color: #fd7e14; 
-  border: 2px dashed rgba(253, 126, 20, 0.4); 
-  padding: 14px 0;
-  border-radius: 14px;
-  font-weight: 700;
-  font-size: 0.95em;
-  cursor: pointer;
-  width: 100%;
-  transition: all 0.2s ease;
-  margin-bottom: 25px; /* DISTÂNCIA DE SEGURANÇA CRÍTICA */
-}
-button.main#btn-add:active {
-  background: rgba(253, 126, 20, 0.1);
-  border-color: #fd7e14;
-}
-
-/* Botão Concluir (Principal, bloco sólido imponente) */
-button.main.btn-conclude {
-  width: 100%; 
-  background: #ffffff; 
-  color: #000000; 
-  border: none;
-  padding: 16px 0; 
-  border-radius: 14px; 
-  font-weight: 800;
-  font-size: 1em; 
-  cursor: pointer; 
-  box-sizing: border-box;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
-  margin-bottom: 15px;
-  transition: transform 0.1s ease;
-}
-button.main.btn-conclude:active {
+/* Feedback visual sutil ao tocar/clicar nos botões */
+.buttons-group button:active,
+.buttons-group button.main:active {
   transform: scale(0.98);
-  background: #e4e4e7;
 }
 
-.action-row { 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  gap: 12px; 
-  width: 100%; 
+/* Botão principal de Concluir (Branco) */
+.btn-concluir {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  width: 100%;
 }
 
-/* Botão Resetar menor para não competir com Compartilhar */
-.action-row .reset-layout-btn { 
-  flex: 1; 
-  margin: 0; 
-  background: #18181b; 
-  color: #a1a1aa; 
-  border: 1px solid #27272a;
-  padding: 14px 0;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9em;
-  cursor: pointer;
-}
-.action-row .reset-layout-btn:active {
-  background: #27272a;
-  color: #ef4444;
+.btn-concluir:hover {
+  background-color: #f0f0f0 !important;
 }
 
-/* Botão Compartilhar Destacado */
-.share-main-btn {
-  height: 48px; 
-  background: #fd7e14; 
-  border: none; 
-  border-radius: 12px;
-  cursor: pointer; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
-  gap: 8px; 
-  padding: 0 20px; 
-  color: #fff; 
-  font-weight: 700; 
-  font-size: 0.95em;
-  flex: 1.5; 
-  transition: background 0.2s ease;
-}
-.share-main-btn:active { background: #f76707; }
-
-footer {
-  position: fixed; bottom: 0; left: 0; width: 100%;
-  background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(10px);
-  color: #71717a; text-align: center; padding: 12px 0; font-size: 0.75em;
-  border-top: 1px solid rgba(255, 255, 255, 0.05); z-index: 10;
+/* Botão de Resetar Treino (Cinza escuro) */
+.btn-reset {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* ==========================================
- * INTERFACE DE CARDIO (ESTILO STRAVA)
- * ========================================== */
-.cardio-dashboard {
-  background: #141417; border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 20px; padding: 25px 20px; text-align: center; box-sizing: border-box;
+.btn-reset:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
 }
-.cardio-main-stat { margin-bottom: 20px; }
-.cardio-main-stat span { font-size: 4.2em; font-weight: 900; color: #fff; display: block; line-height: 1; }
-.cardio-main-stat label { color: #fd7e14; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: 0.85em; margin-top: 6px; display: block; }
 
-.cardio-sub-stats { display: flex; gap: 12px; margin-bottom: 12px; }
-.cardio-mini-box { flex: 1; background: #202024; padding: 12px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.03); }
-.cardio-mini-box span { font-size: 1.5em; font-weight: 800; color: #fff; display: block; }
-.cardio-mini-box label { font-size: 0.75em; color: #71717a; text-transform: uppercase; font-weight: 700; display: block; margin-top: 2px; }
-
-.cardio-map-wrapper {
-  background: #0e0e12; border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 14px; margin-top: 8px; margin-bottom: 20px; padding: 10px;
-  display: flex; justify-content: center; align-items: center;
+/* Botão de Compartilhar (Laranja padrão do PowerFit) */
+.btn-share {
+  background-color: #fd7e14 !important;
+  color: #ffffff !important;
 }
-#cardio-route-canvas { display: block; background: #0e0e12; }
 
-.cardio-start-btn {
-  width: 100%; background: #fd7e14; color: #fff; border: none; padding: 16px 0;
-  border-radius: 14px; font-weight: 800; font-size: 1em; cursor: pointer;
-  box-shadow: 0 4px 15px rgba(253, 126, 20, 0.2);
+.btn-share:hover {
+  background-color: #e86b05 !important;
 }
-.cardio-start-btn.active { background: #ef4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2); }
-
-/* ==========================================
- * DESIGN DO CARD DE IMAGEM AJUSTADO (1080x1080)
- * ========================================== */
-.share-card-hidden {
-  position: absolute; top: 0; left: 0; width: 1080px; height: 1080px;
-  background-color: #0e0e12; box-sizing: border-box; padding: 90px;
-  display: flex; flex-direction: column; justify-content: space-between;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  transform: translateX(-9999px);
-}
-.share-card-header { display: flex; align-items: center; gap: 22px; font-size: 48px; font-weight: 900; color: #ffffff; letter-spacing: 2px; }
-.share-card-header .brand-icon { width: 70px; height: 70px; }
-.share-card-header .accent-text { color: #fd7e14; }
-
-.share-card-body { text-align: center; margin-top: -20px; }
-.share-card-body h1 { font-size: 120px; font-weight: 900; margin: 0; color: #ffffff; letter-spacing: -2px; text-transform: uppercase; }
-.share-status { font-size: 36px; font-weight: 800; color: #fd7e14; letter-spacing: 6px; margin-top: 20px; margin-bottom: 60px; }
-
-#share-route-canvas { background: #141417; border-radius: 24px; border: 2px solid #27272a; }
-
-.share-stats-row { display: flex; justify-content: center; gap: 60px; }
-.share-stat-box { display: flex; flex-direction: column; align-items: center; background: #18181b; border: 2px solid #27272a; padding: 45px 40px; border-radius: 28px; min-width: 280px; }
-.share-stat-val { font-size: 85px; font-weight: 900; color: #ffffff; line-height: 1; }
-.share-stat-lbl { font-size: 24px; color: #a1a1aa; text-transform: uppercase; letter-spacing: 2px; margin-top: 25px; font-weight: 700; }
-
-.share-card-footer { font-size: 34px; color: #52525b; font-weight: 700; text-align: center; border-top: 2px solid #18181b; padding-top: 45px; letter-spacing: 1px; }
-
-@keyframes slideIn { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
