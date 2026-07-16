@@ -1,83 +1,126 @@
 /* ==========================================================================
-   ESTILIZAÇÃO E COMPACTAÇÃO DOS BOTÕES DE AÇÃO
+   ESTILIZAÇÃO DOS BOTÕES DE AÇÃO (CORRIGIDO)
    ========================================================================== */
 
-/* Afasta o botão tracejado de adicionar dos botões de ação abaixo */
+/* Botão secundário de Adicionar Exercício */
 #btn-add {
-  margin-bottom: 32px !important; 
-  padding: 12px 20px;
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  margin: 0 auto 30px auto; /* 30px de margem apenas no fundo para afastar com segurança */
+  background: rgba(255, 255, 255, 0.03);
+  color: #fd7e14;
+  border: 2px dashed rgba(253, 126, 20, 0.4);
+  border-radius: 12px;
+  font-size: 0.95rem;
   font-weight: 600;
-  border-radius: 10px;
-  width: 100%;
-}
-
-/* Container principal das ações do treino */
-.buttons-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px; /* Espaço uniforme vertical entre o Concluir e a linha de baixo */
-  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
-/* Sub-container para colocar o Resetar e Compartilhar lado a lado perfeitamente */
-.buttons-group-row {
-  display: flex;
-  gap: 12px; /* Espaço entre o botão de Resetar e o de Compartilhar */
-  width: 100%;
+#btn-add:active {
+  background: rgba(253, 126, 20, 0.1);
+  transform: scale(0.98);
 }
 
-/* Compactação e refinamento de todos os botões de ação */
-.buttons-group button,
-.buttons-group button.main {
-  padding: 12px 16px !important; /* Altura menor e mais elegante (antes costumava ser 16px+) */
-  font-size: 0.95rem !important; /* Fonte ligeiramente menor para equilibrar com o novo tamanho */
-  font-weight: 700;
-  border-radius: 10px;
-  border: none;
+/* Container do grupo de botões de ação */
+.buttons-group {
+  display: block; /* Evita quebras de flexbox indesejadas no container pai */
+  width: 100%;
+  margin-top: 15px;
+  box-sizing: border-box;
+}
+
+/* Botão Principal de Concluir (Branco) */
+.btn-concluir {
+  width: 100% !important;
+  padding: 14px 16px !important; /* Altura ideal e elegante */
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: background 0.2s ease, transform 0.1s ease;
+  margin-bottom: 12px; /* Margem para afastar os botões de baixo */
+  transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
-/* Feedback visual sutil ao tocar/clicar nos botões */
-.buttons-group button:active,
-.buttons-group button.main:active {
+.btn-concluir:active {
+  background-color: #e5e5e5 !important;
   transform: scale(0.98);
 }
 
-/* Botão principal de Concluir (Branco) */
-.btn-concluir {
-  background-color: #ffffff !important;
-  color: #000000 !important;
+/* Linha horizontal para agrupar Resetar e Compartilhar */
+.buttons-group-row {
+  display: table; /* Substituição segura de Flexbox para evitar quebras no iOS */
   width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 12px 0; /* Cria o espaçamento horizontal perfeito de 12px entre eles */
+  margin-left: -12px; /* Compensa o espaçamento da borda externa */
+  width: calc(100% + 24px);
+  box-sizing: border-box;
 }
 
-.btn-concluir:hover {
-  background-color: #f0f0f0 !important;
+/* Células da linha horizontal (agindo como flex: 1) */
+.buttons-group-cell {
+  display: table-cell;
+  vertical-align: middle;
 }
 
-/* Botão de Resetar Treino (Cinza escuro) */
+/* Botões menores de Resetar e Compartilhar */
+.btn-reset,
+.btn-share {
+  width: 100%;
+  padding: 12px 10px !important; /* Menores que o Concluir */
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  border: none !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.btn-reset:active,
+.btn-share:active {
+  transform: scale(0.97);
+}
+
+/* Estilos individuais de cor */
 .btn-reset {
   background-color: rgba(255, 255, 255, 0.08) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.btn-reset:hover {
-  background-color: rgba(255, 255, 255, 0.15) !important;
-}
-
-/* Botão de Compartilhar (Laranja padrão do PowerFit) */
 .btn-share {
   background-color: #fd7e14 !important;
   color: #ffffff !important;
 }
 
-.btn-share:hover {
-  background-color: #e86b05 !important;
+/* ==========================================================================
+   CORREÇÃO DO CARD DE INSTAGRAM FORA DO ECRÃ
+   ========================================================================== */
+.share-card-offscreen {
+  position: absolute !important;
+  left: -9999px !important; /* Move completamente para fora da área visual */
+  top: -9999px !important;
+  width: 1080px; /* Largura padrão quadrada para os stories */
+  height: 1080px;
+  background-color: #0e0e12;
+  box-sizing: border-box;
+  visibility: hidden; /* Garante que não renderiza de forma fantasma */
 }
