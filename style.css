@@ -1,32 +1,251 @@
 /* ==========================================================================
-   ESTILIZAÇÃO DOS BOTÕES DE AÇÃO (CORRIGIDO)
+   CONFIGURAÇÕES GLOBAIS (DARK DESIGN SYSTEM)
+   ========================================================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: #0e0e12;
+  color: #ffffff;
+  min-height: 100vh;
+  padding: 20px 16px 80px 16px; /* Padding no fundo para não bater no rodapé */
+}
+
+/* HEADER */
+.app-header {
+  text-align: center;
+  padding: 20px 0 10px 0;
+}
+
+.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-icon {
+  font-size: 2.5rem;
+}
+
+.logo h1 {
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.highlight {
+  color: #fd7e14;
+}
+
+/* CONTAINER PRINCIPAL */
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* DASHBOARD / RESUMO DA SEMANA */
+.dashboard-card {
+  background: #16161e;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.card-icon {
+  font-size: 1.3rem;
+}
+
+.card-header h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.card-content p {
+  font-size: 0.95rem;
+  color: #a0a0ab;
+  margin-bottom: 6px;
+}
+
+.card-content p strong {
+  color: #ffffff;
+}
+
+.quote {
+  font-style: italic;
+  color: #fd7e14 !important;
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+/* NAVEGAÇÃO DE ABAS */
+.tabs {
+  display: flex;
+  background: #16161e;
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  gap: 4px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* Ocultar barra de scroll das abas */
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs button {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #a0a0ab;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tabs button.active {
+  background: #272730;
+  color: #ffffff;
+}
+
+/* EXERCÍCIOS (CAMPOS DE INPUT) */
+.exercise {
+  background: #16161e;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.exercise label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #71717a;
+  margin-bottom: 6px;
+  margin-top: 10px;
+}
+
+.exercise label:first-of-type {
+  margin-top: 0;
+}
+
+.exercise input[type="text"],
+.exercise input[type="number"] {
+  width: 100%;
+  background: #272730;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.exercise input:focus {
+  border-color: #fd7e14;
+}
+
+/* Checkboxes Redondos */
+.series-container {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.round-checkbox {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #52525b;
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.round-checkbox:checked {
+  background-color: #fd7e14;
+  border-color: #fd7e14;
+}
+
+/* Botão de excluir exercício individual */
+.delete-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #71717a;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  color: #ef4444;
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #a0a0ab;
+  margin: 15px 0;
+}
+
+/* ==========================================================================
+   ESTILIZAÇÃO E COMPACTAÇÃO DOS BOTÕES DE AÇÃO
    ========================================================================== */
 
-/* Botão secundário de Adicionar Exercício */
+/* Botão "+ Adicionar Exercício" */
 #btn-add {
   display: block;
   width: 100%;
-  padding: 12px 16px;
-  margin: 0 auto 30px auto; /* 30px de margem apenas no fundo para afastar com segurança */
-  background: rgba(255, 255, 255, 0.03);
+  padding: 14px 16px;
+  margin: 0 auto 32px auto; /* 32px de margem no fundo para afastar com segurança */
+  background: rgba(255, 255, 255, 0.02);
   color: #fd7e14;
-  border: 2px dashed rgba(253, 126, 20, 0.4);
+  border: 2px dashed rgba(253, 126, 20, 0.35);
   border-radius: 12px;
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
 #btn-add:active {
-  background: rgba(253, 126, 20, 0.1);
+  background: rgba(253, 126, 20, 0.08);
   transform: scale(0.98);
 }
 
 /* Container do grupo de botões de ação */
 .buttons-group {
-  display: block; /* Evita quebras de flexbox indesejadas no container pai */
+  display: block;
   width: 100%;
   margin-top: 15px;
   box-sizing: border-box;
@@ -35,7 +254,7 @@
 /* Botão Principal de Concluir (Branco) */
 .btn-concluir {
   width: 100% !important;
-  padding: 14px 16px !important; /* Altura ideal e elegante */
+  padding: 14px 16px !important;
   background-color: #ffffff !important;
   color: #000000 !important;
   border: none !important;
@@ -47,7 +266,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 12px; /* Margem para afastar os botões de baixo */
+  margin-bottom: 12px;
   transition: all 0.2s ease;
   box-sizing: border-box;
 }
@@ -57,19 +276,18 @@
   transform: scale(0.98);
 }
 
-/* Linha horizontal para agrupar Resetar e Compartilhar */
+/* Linha horizontal para agrupar Resetar e Compartilhar lado a lado */
 .buttons-group-row {
-  display: table; /* Substituição segura de Flexbox para evitar quebras no iOS */
+  display: table;
   width: 100%;
   table-layout: fixed;
   border-collapse: separate;
-  border-spacing: 12px 0; /* Cria o espaçamento horizontal perfeito de 12px entre eles */
-  margin-left: -12px; /* Compensa o espaçamento da borda externa */
+  border-spacing: 12px 0; /* Espaço horizontal perfeito de 12px entre os botões */
+  margin-left: -12px;
   width: calc(100% + 24px);
   box-sizing: border-box;
 }
 
-/* Células da linha horizontal (agindo como flex: 1) */
 .buttons-group-cell {
   display: table-cell;
   vertical-align: middle;
@@ -79,9 +297,9 @@
 .btn-reset,
 .btn-share {
   width: 100%;
-  padding: 12px 10px !important; /* Menores que o Concluir */
+  padding: 12px 10px !important;
   font-size: 0.9rem !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   border-radius: 12px !important;
   border: none !important;
   cursor: pointer;
@@ -99,7 +317,6 @@
   transform: scale(0.97);
 }
 
-/* Estilos individuais de cor */
 .btn-reset {
   background-color: rgba(255, 255, 255, 0.08) !important;
   color: #ffffff !important;
@@ -111,16 +328,47 @@
   color: #ffffff !important;
 }
 
+/* OUTPUT DO TREINO GERADO */
+.workout-output {
+  margin-top: 24px;
+  background: #16161e;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.workout-output h3 {
+  color: #fd7e14;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.workout-output p {
+  font-size: 0.95rem;
+  color: #ccc;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+/* FOOTER */
+.app-footer {
+  text-align: center;
+  padding: 40px 0 20px 0;
+  font-size: 0.8rem;
+  color: #52525b;
+}
+
 /* ==========================================================================
-   CORREÇÃO DO CARD DE INSTAGRAM FORA DO ECRÃ
+   CORREÇÃO DO CARD DE INSTAGRAM FORA DO ECRÃ (NÃO VAZA MAIS NO RODAPÉ)
    ========================================================================== */
 .share-card-offscreen {
   position: absolute !important;
-  left: -9999px !important; /* Move completamente para fora da área visual */
+  left: -9999px !important;
   top: -9999px !important;
-  width: 1080px; /* Largura padrão quadrada para os stories */
+  width: 1080px;
   height: 1080px;
   background-color: #0e0e12;
   box-sizing: border-box;
-  visibility: hidden; /* Garante que não renderiza de forma fantasma */
+  visibility: hidden;
 }
