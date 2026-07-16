@@ -8,8 +8,9 @@ const ASSETS = [
   '/icons/icon-192x192.png'
 ];
 
-// Instalação do Cache
+// Instalação do Cache (Adicionado skipWaiting)
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Força o SW novo a se tornar ativo imediatamente, sem esperar abas fecharem
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(ASSETS);
@@ -19,7 +20,10 @@ self.addEventListener('install', event => {
 
 // Ativação do Service Worker
 self.addEventListener('activate', event => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    // Garante que o Service Worker passe a controlar a página atual de imediato
+    self.clients.claim() 
+  );
 });
 
 // Estratégia Fetch (Network First com Fallback para Cache)
@@ -50,4 +54,3 @@ self.addEventListener('notificationclick', event => {
     })
   );
 });
-
