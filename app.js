@@ -273,50 +273,14 @@ function confirmReset() {
   }
 }
 
-// ==========================================
-// SISTEMA DE NOTIFICAÇÃO LOCAL DE INATIVIDADE
-// ==========================================
 function checkInactivity() {
   const lastAccess = localStorage.getItem("lastAccess");
   const now = Date.now();
-  
   if (lastAccess) {
     const diffDays = Math.floor((now - parseInt(lastAccess)) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays >= 2) {
-      // Caso o usuário já tenha aceito a permissão antes, dispara direto
-      if ("Notification" in window && Notification.permission === "granted") {
-        showInactivityNotification(diffDays);
-      } else if ("Notification" in window && Notification.permission === "default") {
-        // Correção de Segurança: Aguarda o primeiro toque na tela para contornar o bloqueio automático de popups
-        document.addEventListener('click', function requestOnGesture() {
-          Notification.requestPermission().then(permission => {
-            if (permission === "granted") {
-              showInactivityNotification(diffDays);
-              // Registra o token no Push Manager agora que foi aprovado
-              const userId = localStorage.getItem("powerfit_user_id");
-              navigator.serviceWorker.ready.then(reg => subscribeUserToPush(reg, userId));
-            }
-          });
-          document.removeEventListener('click', requestOnGesture);
-        }, { once: true });
-      }
-    }
+    if (diffDays >= 2) alert("⚠️ Você está há " + diffDays + " dias sem treinar! Bora focar!");
   }
   localStorage.setItem("lastAccess", now);
-}
-
-function showInactivityNotification(days) {
-  navigator.serviceWorker.ready.then(registration => {
-    registration.showNotification("POWERFIT ⚡", {
-      body: `⚠️ Você está há ${days} dias sem treinar! Bora focar e pagar o treino de hoje!`,
-      icon: "icons/icon-192x192.png",
-      badge: "icons/icon-192x192.png",
-      vibrate: [200, 100, 200],
-      tag: "inactivity-alert",
-      renotify: true
-    });
-  });
 }
 
 // ==========================================
@@ -543,17 +507,21 @@ function fillShareCardData() {
   const mapContainer = document.getElementById("share-map-container");
   
   if (currentWorkout === "Cardio") {
+    // Altera o título fixo solicitado
     document.getElementById("share-workout-title").innerText = "DIA DE CARDIO";
     mapContainer.style.display = "block";
     drawRoute("share-route-canvas", cardioData.positions);
     
+    // Altera o primeiro bloco para exibir o Tempo
     const durationText = document.getElementById("cardio-duration").innerText;
     document.getElementById("share-stat-exercises").innerText = durationText;
     document.getElementById("share-lbl-exercises").innerText = "Tempo";
     
+    // Altera o segundo bloco para exibir os Passos
     document.getElementById("share-stat-progress").innerText = cardioData.steps;
     document.getElementById("share-lbl-progress").innerText = "Passos";
   } else {
+    // Layout padrão para Musculação
     document.getElementById("share-workout-title").innerText = `TREINO ${currentWorkout}`;
     mapContainer.style.display = "none";
     const exercises = workouts[currentWorkout] || [];
@@ -660,7 +628,7 @@ function initServiceWorker(userId) {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").then(reg => {
       if (Notification.permission === "default") {
-        // Deixamos o fluxo para o click-handler em checkInactivity()
+        Notification.requestPermission().then(perm => { if (perm === "granted") subscribeUserToPush(reg, userId); });
       } else if (Notification.permission === "granted") {
         subscribeUserToPush(reg, userId);
       }
