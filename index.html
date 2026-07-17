@@ -2,164 +2,142 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PowerFit</title>
-  
   <link rel="manifest" href="manifest.json">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="PowerFit">
-  <link class="apple-touch-icon" rel="apple-touch-icon" href="icons/icon-192x192.png">
-  
   <link rel="stylesheet" href="style.css">
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
-  <header class="app-header">
-    <div class="logo">
-      <span class="logo-icon">🍊</span>
-      <h1>POWER<span class="highlight">FIT</span></h1>
+  <header>
+    <div class="header-container">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6.5 7.5C7.32843 7.5 8 6.82843 8 6C8 5.17157 7.32843 4.5 6.5 4.5C5.67157 4.5 5 5.17157 5 6C5 6.82843 5.67157 7.5 6.5 7.5Z" fill="#fd7e14"/>
+        <path d="M17.5 7.5C18.3284 7.5 19 6.82843 19 6C19 5.17157 18.3284 4.5 17.5 4.5C16.6716 4.5 16 6 16 6C16 6.82843 16.6716 7.5 17.5 7.5Z" fill="#fd7e14"/>
+        <path d="M2 9C2 8.44772 2.44772 8 3 8H21C21.5523 8 22 8.44772 22 9V11C22 11.5523 21.5523 12 21 12H19V15C19 16.6569 17.6569 18 16 18H8C6.34315 18 5 16.6569 5 15V12H3C2.44772 12 2 11.5523 2 11V9ZM7 12V15C7 15.5523 7.44772 16 8 16H16C16.5523 16 17 15.5523 17 15V12H7Z" fill="#ffffff"/>
+      </svg>
+      <span>POWER<span class="accent-text">FIT</span></span>
     </div>
   </header>
 
-  <main class="container">
-    
-    <section class="dashboard-card">
-      <div class="card-header">
-        <span class="card-icon">📊</span>
-        <h2>Resumo da Semana</h2>
-      </div>
-      <div class="card-content">
-        <p id="weekly-progress">Treinos concluídos na semana: 0</p>
-        <p id="last-workout">Último treino: nenhum</p>
-        <p class="quote">"Seja sua própria inspiração!"</p>
-      </div>
-    </section>
-
-    <nav class="tabs">
-      <button id="btn-tab-A" class="active" onclick="switchWorkout('A')">Treino A</button>
-      <button id="btn-tab-B" onclick="switchWorkout('B')">Treino B</button>
-      <button id="btn-tab-C" onclick="switchWorkout('C')">Treino C</button>
-      <button id="btn-tab-Cardio" onclick="switchWorkout('Cardio')">🏃‍♂️ Cardio</button>
-      <button id="btn-tab-Hist" onclick="renderHistory()">Histórico</button>
-    </nav>
-
-    <section id="workout-section">
-      <div id="exercise-list">
-        </div>
-
-      <div id="progress" class="progress-text">Progresso: 0% concluído</div>
-
-      <button id="btn-add" onclick="addExercise()">+ Adicionar Exercício</button>
-
-      <div class="buttons-group">
-        
-        <button class="btn-concluir" onclick="generateWorkout()">
-          📋 Concluir e Gerar Treino
-        </button>
-        
-        <div class="buttons-group-row">
-          
-          <div class="buttons-group-cell">
-            <button class="btn-reset" onclick="confirmReset()">
-              🔄 Resetar Treino
-            </button>
-          </div>
-          
-          <div class="buttons-group-cell">
-            <button class="btn-share" onclick="shareActivity()">
-              <span>📤</span> Compartilhar
-            </button>
-          </div>
-          
-        </div>
-      </div>
-
-      <div id="output" class="workout-output" style="display: none;"></div>
-    </section>
-
-    <section id="cardio-panel" style="display: none;">
-      <div class="cardio-stats">
-        <div class="stat-box">
-          <span class="stat-label">Distância</span>
-          <span class="stat-value"><span id="cardio-distance">0.00</span> <small>km</small></span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-label">Tempo</span>
-          <span class="stat-value" id="cardio-duration">00:00</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-label">Velocidade</span>
-          <span class="stat-value"><span id="cardio-speed">0.0</span> <small>km/h</small></span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-label">Passos</span>
-          <span class="stat-value" id="cardio-steps">0</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-label">Calorias</span>
-          <span class="stat-value"><span id="cardio-calories">0</span> <small>kcal</small></span>
-        </div>
-      </div>
-
-      <div class="canvas-container">
-        <canvas id="cardio-route-canvas" width="300" height="200"></canvas>
-      </div>
-
-      <div class="cardio-controls">
-        <button id="btn-toggle-cardio" class="btn-cardio-start" onclick="toggleCardioTracking()">
-          ▶ Iniciar Atividade
-        </button>
-      </div>
-    </section>
-
-    <section id="history-list" style="display: none;" class="history-section">
-      </section>
-
-  </main>
-
   <div id="rest-timer-banner" class="timer-banner" style="display: none;">
-    <div class="timer-content">
-      <span class="timer-icon">⏱️</span>
-      <span class="timer-text">Descanso: <strong id="timer-countdown">60s</strong></span>
-    </div>
-    <button class="btn-skip-timer" onclick="skipTimer()">Pular</button>
+    <span class="timer-label">⏱️ DESCANSO:</span>
+    <span id="timer-countdown">60s</span>
+    <button class="timer-skip-btn" onclick="skipTimer()">Pular</button>
   </div>
 
-  <div id="instagram-share-card" class="share-card-offscreen">
-    <div class="share-card-header">
-      <span class="share-logo">🍊 POWERFIT</span>
-      <span id="share-card-date" class="share-date">--/--/----</span>
-    </div>
-    <div class="share-card-body">
-      <h2 id="share-workout-title">TREINO A</h2>
-      
-      <div class="share-stats-grid">
-        <div class="share-stat-item">
-          <span id="share-stat-exercises" class="share-value">0</span>
-          <span id="share-lbl-exercises" class="share-label">Exercícios</span>
+  <div id="dashboard" class="dashboard">
+    <h2>📊 Resumo da Semana</h2>
+    <p id="weekly-progress">Treinos concluídos na semana: 0</p>
+    <p id="last-workout">Último treino: nenhum</p>
+    <p id="motivational">"Seja sua própria inspiração!"</p>
+  </div>
+
+  <div class="tabs">
+    <button id="btn-tab-A" class="active" onclick="switchWorkout('A')">Treino A</button>
+    <button id="btn-tab-B" onclick="switchWorkout('B')">Treino B</button>
+    <button id="btn-tab-C" onclick="switchWorkout('C')">Treino C</button>
+    <button id="btn-tab-Cardio" onclick="switchWorkout('Cardio')">🏃‍♂️ Cardio</button>
+    <button id="btn-tab-Hist" onclick="renderHistory()">Histórico</button>
+  </div>
+
+  <div class="container" id="exercise-list"></div>
+  <div class="container" id="history-list" style="display:none;"></div>
+
+  <div class="container" id="cardio-panel" style="display:none;">
+    <div class="cardio-dashboard">
+      <div class="cardio-main-stat">
+        <span id="cardio-distance">0.00</span>
+        <label>Quilômetros (KM)</label>
+      </div>
+      <div class="cardio-sub-stats">
+        <div class="cardio-mini-box">
+          <span id="cardio-duration">00:00</span>
+          <label>Tempo</label>
         </div>
-        <div class="share-stat-item">
-          <span id="share-stat-progress" class="share-value">0%</span>
-          <span id="share-lbl-progress" class="share-label">Progresso</span>
+        <div class="cardio-mini-box">
+          <span id="cardio-speed">0.0</span>
+          <label>Velocidade (km/h)</label>
         </div>
       </div>
+      
+      <div class="cardio-sub-stats" style="margin-top: -5px;">
+        <div class="cardio-mini-box">
+          <span id="cardio-steps">0</span>
+          <label>Passos</label>
+        </div>
+        <div class="cardio-mini-box">
+          <span id="cardio-calories">0</span>
+          <label>Kcal Estimadas</label>
+        </div>
+      </div>
+      
+      <div class="cardio-map-wrapper">
+        <canvas id="cardio-route-canvas" width="300" height="180"></canvas>
+      </div>
 
-      <div id="share-map-container" class="share-map-wrapper" style="display: none;">
-        <canvas id="share-route-canvas" width="280" height="150"></canvas>
+      <button id="btn-toggle-cardio" class="cardio-start-btn" onclick="toggleCardioTracking()">▶ Iniciar Atividade</button>
+    </div>
+  </div>
+
+  <div id="progress">Progresso: 0% concluído</div>
+  <div id="output"></div>
+
+  <div class="buttons-group">
+    <button class="main" id="btn-add" onclick="addExercise()">+ Adicionar Exercício</button>
+    <button class="main" onclick="generateWorkout()">📋 Concluir e Gerar Treino</button>
+    
+    <div class="action-row">
+      <button class="main reset-layout-btn" onclick="confirmReset()">🔄 Resetar Treino</button>
+      
+      <button class="share-main-btn" onclick="shareActivity()" title="Compartilhar nas Redes Sociais">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px; fill: #fff;">
+          <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.17C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.83C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.17L15.12 18.3C15.07 18.51 15.05 18.73 15.05 18.95C15.05 20.57 16.33 21.87 17.95 21.87C19.57 21.87 20.87 20.57 20.87 18.95C20.87 17.33 19.57 16.08 18 16.08Z"/>
+        </svg>
+        <span>Compartilhar</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="instagram-share-card" class="share-card-hidden">
+    <div class="share-card-header">
+      <svg class="brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6.5 7.5C7.32843 7.5 8 6.82843 8 6C8 5.17157 7.32843 4.5 6.5 4.5C5.67157 4.5 5 5.17157 5 6C5 6.82843 5.67157 7.5 6.5 7.5Z" fill="#fd7e14"/>
+        <path d="M17.5 7.5C18.3284 7.5 19 6.82843 19 6C19 5.17157 18.3284 4.5 17.5 4.5C16.6716 4.5 16 6 16 6C16 6.82843 16.6716 7.5 17.5 7.5Z" fill="#fd7e14"/>
+        <path d="M2 9C2 8.44772 2.44772 8 3 8H21C21.5523 8 22 8.44772 22 9V11C22 11.5523 21.5523 12 21 12H19V15C19 16.6569 17.6569 18 16 18H8C6.34315 18 5 16.6569 5 15V12H3C2.44772 12 2 11.5523 2 11V9ZM7 12V15C7 15.5523 7.44772 16 8 16H16C16.5523 16 17 15.5523 17 15V12H7Z" fill="#ffffff"/>
+      </svg>
+      <span>POWER<span class="accent-text">FIT</span></span>
+    </div>
+    
+    <div class="share-card-body">
+      <h1 id="share-workout-title">TREINO A</h1>
+      <p class="share-status">CONCLUÍDO COM SUCESSO</p>
+      
+      <div id="share-map-container" style="display: none; margin: -20px auto 40px auto; width: 450px; height: 250px;">
+        <canvas id="share-route-canvas" width="450" height="250"></canvas>
+      </div>
+
+      <div class="share-stats-row">
+        <div class="share-stat-box">
+          <span class="share-stat-val" id="share-stat-exercises">0</span>
+          <span class="share-stat-lbl" id="share-lbl-exercises">Exercícios</span>
+        </div>
+        <div class="share-stat-box">
+          <span class="share-stat-val" id="share-stat-progress">0%</span>
+          <span class="share-stat-lbl" id="share-lbl-progress">Progresso</span>
+        </div>
       </div>
     </div>
     <div class="share-card-footer">
-      <span>Foco & Consistência 🔥</span>
+      <span id="share-card-date">00/00/2026</span>
     </div>
   </div>
 
-  <footer class="app-footer">
-    <p>2026 Desenvolvido por @ndakkota</p>
+  <footer>
+    2026 Desenvolvido por @ndakkota
   </footer>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
