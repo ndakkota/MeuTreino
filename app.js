@@ -284,7 +284,7 @@ function checkInactivity() {
 }
 
 // ==========================================
-// RASTREAMENTO DE CARDIO (GPS + PASSOS + KCAL)
+// RASTREAMENTO DE CARDIO (GPS + PASSOS + KCAL ESTILO STRAVA)
 // ==========================================
 function toggleCardioTracking() {
   if (!cardioActive) {
@@ -371,6 +371,16 @@ function startCardioTrackingEngine() {
       document.getElementById("cardio-speed").innerText = speed.toFixed(1);
     }
 
+    // Estimativa de Passos via GPS (1 passo = ~0,75m)
+    if (cardioData.distance > 0) {
+      const estimatedSteps = Math.floor((cardioData.distance * 1000) / 0.75);
+      if (estimatedSteps > cardioData.steps) {
+        cardioData.steps = estimatedSteps;
+        document.getElementById("cardio-steps").innerText = cardioData.steps;
+        localStorage.setItem("cardioSteps", cardioData.steps.toString());
+      }
+    }
+
     if (cardioData.elapsedSeconds > 0) {
       let metValue = speed > 6.5 ? 7.5 : 4.0;
       if (speed === 0) metValue = 1.2;
@@ -383,25 +393,33 @@ function startCardioTrackingEngine() {
 
   watchId = navigator.geolocation.watchPosition(
     (position) => {
-      const { latitude, longitude } = position.coords;
+      const { latitude, longitude, accuracy } = position.coords;
+      
+      // Filtra oscilações de sinal muito imprecisas (> 30 metros)
+      if (accuracy > 30) return;
+
       const newPos = { lat: latitude, lng: longitude };
       
       if (cardioData.positions.length > 0) {
         const lastPos = cardioData.positions[cardioData.positions.length - 1];
         const distIncrement = calculateDistance(lastPos.lat, lastPos.lng, newPos.lat, newPos.lng);
         
-        if (distIncrement > 0.001) { 
+        // Acumula a distância se o deslocamento for de pelo menos 2 metros (0.002 km)
+        if (distIncrement >= 0.002) { 
           cardioData.distance += distIncrement;
           document.getElementById("cardio-distance").innerText = cardioData.distance.toFixed(2);
           localStorage.setItem("cardioDistance", cardioData.distance.toString());
+          cardioData.positions.push(newPos);
+          localStorage.setItem("cardioPositions", JSON.stringify(cardioData.positions));
+          drawRoute("cardio-route-canvas", cardioData.positions);
         }
+      } else {
+        cardioData.positions.push(newPos);
+        localStorage.setItem("cardioPositions", JSON.stringify(cardioData.positions));
       }
-      cardioData.positions.push(newPos);
-      localStorage.setItem("cardioPositions", JSON.stringify(cardioData.positions));
-      drawRoute("cardio-route-canvas", cardioData.positions);
     },
-    (err) => console.log(err), 
-    { enableHighAccuracy: true, distanceFilter: 1 }
+    (err) => console.log("Erro de GPS:", err), 
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
   );
 }
 
@@ -411,7 +429,7 @@ function handleMotion(event) {
   if (!acc) return;
 
   const magnitude = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
-  const delta = Math.abs(magnitude - lastAcceleration.total);
+  const delta = Math.abs(magnitude - (lastAcceleration.total || 0));
   const now = Date.now();
 
   if (magnitude > stepThreshold && (now - lastStepTime) > 300 && delta > 2) {
@@ -507,21 +525,17 @@ function fillShareCardData() {
   const mapContainer = document.getElementById("share-map-container");
   
   if (currentWorkout === "Cardio") {
-    // Altera o título fixo solicitado
     document.getElementById("share-workout-title").innerText = "DIA DE CARDIO";
     mapContainer.style.display = "block";
     drawRoute("share-route-canvas", cardioData.positions);
     
-    // Altera o primeiro bloco para exibir o Tempo
     const durationText = document.getElementById("cardio-duration").innerText;
     document.getElementById("share-stat-exercises").innerText = durationText;
     document.getElementById("share-lbl-exercises").innerText = "Tempo";
     
-    // Altera o segundo bloco para exibir os Passos
     document.getElementById("share-stat-progress").innerText = cardioData.steps;
     document.getElementById("share-lbl-progress").innerText = "Passos";
   } else {
-    // Layout padrão para Musculação
     document.getElementById("share-workout-title").innerText = `TREINO ${currentWorkout}`;
     mapContainer.style.display = "none";
     const exercises = workouts[currentWorkout] || [];
