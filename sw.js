@@ -1,56 +1,83 @@
 const CACHE_NAME = 'powerfit-v1';
-const ASSETS = [
+const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/style.css',
+  '/styles.css',
   '/app.js',
   '/manifest.json',
-  '/icons/icon-192x192.png'
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
-// Instalação do Cache (Adicionado skipWaiting)
-self.addEventListener('install', event => {
-  self.skipWaiting(); // Força o SW novo a se tornar ativo imediatamente, sem esperar abas fecharem
+// Instalação do Service Worker e Cache Inicial
+self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Força o Service Worker a se tornar ativo imediatamente
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS);
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
     })
   );
 });
 
-// Ativação do Service Worker
-self.addEventListener('activate', event => {
+// Ativação e Limpeza de Caches Antigos
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    // Garante que o Service Worker passe a controlar a página atual de imediato
-    self.clients.claim() 
+    clients.claim().then(() => {
+      return caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cache) => {
+            if (cache !== CACHE_NAME) {
+              return caches.delete(cache);
+            }
+          })
+        );
+      });
+    })
   );
 });
 
-// Estratégia Fetch (Network First com Fallback para Cache)
-self.addEventListener('fetch', event => {
+// Estratégia de Fetch: Tenta a rede primeiro, depois o cache
+self.addEventListener('fetch', (event) => {
+  // Ignora requisições POST ou externas (como push server)
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
 
-// Ouvir evento de clique na Notificação do Celular
-self.addEventListener('notificationclick', event => {
-  event.notification.close(); // Fecha o popup
-  
-  // Abre o aplicativo ao clicar na notificação
+// Evento para Notificações Push
+self.addEventListener('push', (event) => {
+  let data = { title: 'PowerFit', body: 'Hora do treino! Vamos manter o foco! 🔥' };
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data.body = event.data.text();
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: { dateOfArrival: Date.now() }
+  };
+
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
-      for (let i = 0; i < windowClients.length; i++) {
-        const client = windowClients[i];
-        if (client.url && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow('/');
-      }
-    })
+    self.registration.showNotification(data.title, options)
   );
 });
