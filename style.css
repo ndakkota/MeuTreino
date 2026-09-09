@@ -1,63 +1,378 @@
-/* Botão Principal de Adicionar Exercício com Destaque Laranja */
-button#btn-add { 
-  background: #fd7e14 !important; 
-  color: #ffffff !important; 
-  border: none; 
-  font-size: 1.05em;
-  font-weight: 800;
-  box-shadow: 0 4px 15px rgba(253, 126, 20, 0.3);
-  transition: transform 0.1s ease, background 0.2s ease;
+/* ==========================================
+   RESET E CONFIGURAÇÃO GLOBAL (DARK MODE)
+   ========================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
-button#btn-add:active {
-  transform: scale(0.98);
+body {
+  background-color: #0e0e12;
+  color: #f1f1f1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 16px;
+  max-width: 480px;
+  margin: 0 auto;
 }
 
-/* Ajuste Fino na Linha de Ações (Reset + Compartilhar) */
-.action-row { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  gap: 10px; 
-  width: 100%; 
+/* ==========================================
+   CABEÇALHO E DASHBOARD
+   ========================================== */
+header {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-/* Botão Resetar mantido limpo */
-.action-row .reset-layout-btn { 
-  flex: 2; 
-  margin: 0; 
-  background: #27272a; 
-  color: #fff; 
-  height: 44px;
-  padding: 0 12px;
+header h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #ffffff;
 }
 
-/* Botão Compartilhar Compacto e Pequeno */
-.share-main-btn {
-  flex: 1; /* Ocupa apenas o espaço necessário */
-  height: 44px; 
-  background: #27272a; /* Tom neutro para dar destaque ao +Adicionar */
-  border: 1px solid rgba(255, 255, 255, 0.1); 
+header h1 span {
+  color: #fd7e14;
+}
+
+#dashboard {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  cursor: pointer; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
-  gap: 6px; 
-  padding: 0 12px; 
-  color: #f4f4f5; 
-  font-weight: 600; 
-  font-size: 0.85em;
-  transition: background 0.2s ease;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+#dashboard p {
+  margin: 4px 0;
+}
+
+/* ==========================================
+   NAVEGAÇÃO POR ABAS
+   ========================================== */
+.tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  scrollbar-width: none; /* Firefox */
+}
+
+.tabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.tabs button {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ccc;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
   white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.share-main-btn:hover { 
-  background: #3f3f46; 
+.tabs button.active {
+  background: #fd7e14;
+  color: #ffffff;
+  border-color: #fd7e14;
+  box-shadow: 0 4px 12px rgba(253, 126, 20, 0.3);
 }
 
-.share-main-btn svg {
-  width: 16px !important;
-  height: 16px !important;
-  fill: #a1a1aa !important;
+/* ==========================================
+   TIMER DE DESCANSO
+   ========================================== */
+#rest-timer-banner {
+  background: #fd7e14;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+#rest-timer-banner button {
+  background: rgba(0, 0, 0, 0.2);
+  border: none;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ==========================================
+   PROGRESSO E LISTA DE EXERCÍCIOS
+   ========================================== */
+#progress {
+  font-size: 0.9rem;
+  color: #fd7e14;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.exercise {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+.exercise label {
+  display: block;
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.exercise input[type="text"],
+.exercise input[type="number"] {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.series-container {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.round-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.round-checkbox:checked {
+  background: #28a745;
+  border-color: #28a745;
+}
+
+.round-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 18px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.delete-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #ff4d4d;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* ==========================================
+   PAINEL CARDIO & MÉTRICAS GPS
+   ========================================== */
+#cardio-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.cardio-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.metric-box {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.metric-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.metric-value small {
+  font-size: 0.8rem;
+  color: #fd7e14;
+}
+
+.canvas-container {
+  width: 100%;
+  background: #141419;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#cardio-route-canvas {
+  width: 100%;
+  height: 200px;
+  display: block;
+}
+
+/* ==========================================
+   BOTÕES DE AÇÃO
+   ========================================== */
+.buttons-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+button.main, .cardio-btn {
+  background: #fd7e14;
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
+
+button.cardio-btn.active {
+  background: #dc3545;
+}
+
+button.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.danger {
+  background: transparent;
+  color: #ff4d4d;
+  border: none;
+  padding: 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* ==========================================
+   CARD DE COMPARTILHAMENTO (INSTAGRAM)
+   ========================================== */
+.share-card-theme {
+  width: 320px;
+  background: #0e0e12;
+  border: 2px solid #fd7e14;
+  border-radius: 20px;
+  padding: 24px;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+.share-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.share-header h2 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.share-header h2 span {
+  color: #fd7e14;
+}
+
+#share-card-date {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+#share-workout-title {
+  color: #fd7e14;
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.share-stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 16px 0;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-num {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.stat-desc {
+  font-size: 0.7rem;
+  color: #aaa;
+}
+
+.share-footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #fd7e14;
+  font-weight: bold;
 }
