@@ -1,12 +1,12 @@
-const CACHE_NAME = 'powerfit-v5';
+const CACHE_NAME = 'powerfit-v6';
 const ASSETS_TO_CACHE = [
-  '/MeuTreino/',
-  '/MeuTreino/index.html',
-  '/MeuTreino/style.css',
-  '/MeuTreino/app.js',
-  '/MeuTreino/manifest.json',
-  '/MeuTreino/icon-192.png',
-  '/MeuTreino/icon-512.png'
+  './',
+  'index.html',
+  'style.css',
+  'app.js',
+  'manifest.json',
+  'icon-192.png',
+  'icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
