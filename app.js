@@ -1,20 +1,8 @@
-// Registra o Service Worker especificando o escopo correto do GitHub Pages
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/MeuTreino/sw.js', { scope: '/MeuTreino/' })
+  navigator.serviceWorker.register('sw.js')
     .catch((err) => console.log('SW error:', err));
 }
 
-// Banco de Frases Motivacionais
-const MOTIVATIONAL_QUOTES = [
-  '"O único treino ruim é aquele que não aconteceu."',
-  '"A dor que você sente hoje é a força que você sente amanhã."',
-  '"Desafie-se todos os dias!"',
-  '"Disciplina é fazer o que precisa ser feito, mesmo sem vontade."',
-  '"Pequenos progressos diários resultam em grandes conquistas."',
-  '"O seu único limite é você."'
-];
-
-// Estado da Aplicação
 let currentWorkout = 'A';
 let timerInterval = null;
 let timerSeconds = 60;
@@ -39,19 +27,11 @@ let workouts = JSON.parse(localStorage.getItem('powerfit_workouts')) || {
 
 let history = JSON.parse(localStorage.getItem('powerfit_history')) || [];
 
-// Inicialização
 document.addEventListener('DOMContentLoaded', () => {
-  displayRandomQuote();
   updateDashboard();
   renderExercises(workouts[currentWorkout]);
   initPedometer();
 });
-
-function displayRandomQuote() {
-  const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
-  const quoteEl = document.getElementById('motivational-quote');
-  if (quoteEl) quoteEl.innerText = MOTIVATIONAL_QUOTES[randomIndex];
-}
 
 function saveWorkouts() {
   localStorage.setItem('powerfit_workouts', JSON.stringify(workouts));
@@ -78,8 +58,6 @@ function switchWorkout(workout) {
     document.getElementById("btn-add").style.display = "none";
     document.getElementById("btn-conclude").style.display = "none";
     document.getElementById("progress").innerText = "Atividade de Cardio";
-    
-    // Redesenha a rota no Canvas ao mudar para a aba Cardio
     drawRoute("cardio-route-canvas", cardioData.positions);
   } else {
     document.getElementById("exercise-list").style.display = "block";
@@ -197,7 +175,6 @@ function updateProgress() {
   document.getElementById("progress").innerText = `Progresso: ${percent}% concluído`;
 }
 
-// Timer de Descanso
 function startRestTimer() {
   clearInterval(timerInterval);
   timerSeconds = 60;
@@ -221,7 +198,6 @@ function skipTimer() {
   document.getElementById("rest-timer-banner").style.display = "none";
 }
 
-// GPS e Rastreamento de Cardio
 function toggleCardioTracking() {
   const btn = document.getElementById("btn-toggle-cardio");
   if (!cardioData.isTracking) {
@@ -294,7 +270,6 @@ function updateCardioUI() {
   document.getElementById("cardio-calories").innerText = cardioData.calories;
 }
 
-// Desenho da rota no Canvas
 function drawRoute(canvasId, positions) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
