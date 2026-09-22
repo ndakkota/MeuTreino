@@ -3,18 +3,17 @@
   "name": "PowerFit - Workout & Cardio Tracker",
   "icons": [
     {
-      "src": "/MeuTreino/icon-192.png",
+      "src": "icon-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/MeuTreino/icon-512.png",
+      "src": "icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
-  "start_url": "/MeuTreino/index.html",
-  "scope": "/MeuTreino/",
+  "start_url": "index.html",
   "background_color": "#0e0e12",
   "theme_color": "#fd7e14",
   "display": "standalone",
