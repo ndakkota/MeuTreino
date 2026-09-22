@@ -1,8 +1,8 @@
-const CACHE_NAME = 'powerfit-v4';
+const CACHE_NAME = 'powerfit-v5';
 const ASSETS_TO_CACHE = [
   '/MeuTreino/',
   '/MeuTreino/index.html',
-  '/MeuTreino/styles.css',
+  '/MeuTreino/style.css',
   '/MeuTreino/app.js',
   '/MeuTreino/manifest.json',
   '/MeuTreino/icon-192.png',
