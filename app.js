@@ -12,6 +12,7 @@ let cardioData = {
   isTracking: false,
   distanceKm: 0,
   seconds: 0,
+  startTime: null,
   steps: 0,
   calories: 0,
   speed: 0,
@@ -200,15 +201,53 @@ function skipTimer() {
 
 function toggleCardioTracking() {
   const btn = document.getElementById("btn-toggle-cardio");
+
   if (!cardioData.isTracking) {
+
     cardioData.isTracking = true;
+
+    cardioData.startTime = Date.now();
+
     btn.innerText = "⏹ Parar e Salvar Atividade";
     btn.classList.add("active");
 
     cardioData.intervalId = setInterval(() => {
-      cardioData.seconds++;
+
+      cardioData.seconds = Math.floor(
+        (Date.now() - cardioData.startTime) / 1000
+      );
+
       updateCardioUI();
+
     }, 1000);
+
+    if ("geolocation" in navigator) {
+      watchId = navigator.geolocation.watchPosition(
+        handleGPSPosition,
+        (err) => console.log(err),
+        {
+          enableHighAccuracy: true,
+          maximumAge: 1000
+        }
+      );
+    }
+
+  } else {
+
+    cardioData.isTracking = false;
+
+    btn.innerText = "▶ Iniciar Atividade";
+    btn.classList.remove("active");
+
+    clearInterval(cardioData.intervalId);
+
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+    }
+
+    saveCardioHistory();
+  }
+}
 
     if ("geolocation" in navigator) {
       watchId = navigator.geolocation.watchPosition(
@@ -373,7 +412,15 @@ function generateWorkout() {
   updateDashboard();
   alert(`Treino ${currentWorkout} concluído com sucesso! 💪`);
 }
+function deleteHistoryItem(index) {
+  if (!confirm("Excluir este registro do histórico?")) return;
 
+  history.splice(index, 1);
+
+  saveHistory();
+  updateDashboard();
+  renderHistory();
+}
 function saveCardioHistory() {
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR');
