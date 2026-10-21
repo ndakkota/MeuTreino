@@ -441,21 +441,81 @@ function saveCardioHistory() {
 }
 
 function renderHistory() {
-  document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
-  document.getElementById("btn-tab-Hist").classList.add("active");
+
+  document
+    .querySelectorAll(".tabs button")
+    .forEach(btn => btn.classList.remove("active"));
+
+  document
+    .getElementById("btn-tab-Hist")
+    .classList.add("active");
 
   document.getElementById("exercise-list").style.display = "none";
   document.getElementById("cardio-panel").style.display = "none";
   document.querySelector(".buttons-group").style.display = "none";
-  
+
   const container = document.getElementById("history-list");
+
   container.style.display = "block";
   container.innerHTML = "";
 
   if (history.length === 0) {
-    container.innerHTML = `<p style="color:#666; text-align:center; padding:20px;">Nenhum histórico registrado.</p>`;
+
+    container.innerHTML =
+      `<p style="color:#666; text-align:center; padding:20px;">
+        Nenhum histórico registrado.
+      </p>`;
+
     return;
   }
+
+  history
+    .slice()
+    .reverse()
+    .forEach((item, reverseIndex) => {
+
+      const originalIndex =
+        history.length - 1 - reverseIndex;
+
+      const div = document.createElement("div");
+
+      div.className = "exercise";
+
+      div.innerHTML = `
+        <strong style="color:#fd7e14;">
+          ${item.title}
+        </strong>
+        -
+        <small style="color:#aaa;">
+          ${item.date}
+        </small>
+
+        <p style="margin-top:6px;font-size:0.85rem;color:#ccc;">
+          ${
+            item.type === 'cardio'
+              ? `Distância: ${item.distance} km | Tempo: ${item.duration}`
+              : `Exercícios: ${item.exercisesCount}`
+          }
+        </p>
+
+        <button
+          onclick="deleteHistoryItem(${originalIndex})"
+          style="
+            margin-top:10px;
+            padding:8px 12px;
+            border:none;
+            border-radius:8px;
+            background:#dc3545;
+            color:white;
+            cursor:pointer;
+          ">
+          🗑 Excluir
+        </button>
+      `;
+
+      container.appendChild(div);
+    });
+}
 
   history.slice().reverse().forEach(item => {
     const div = document.createElement("div");
