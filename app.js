@@ -203,22 +203,17 @@ function toggleCardioTracking() {
   const btn = document.getElementById("btn-toggle-cardio");
 
   if (!cardioData.isTracking) {
-
     cardioData.isTracking = true;
-
     cardioData.startTime = Date.now();
 
     btn.innerText = "⏹ Parar e Salvar Atividade";
     btn.classList.add("active");
 
     cardioData.intervalId = setInterval(() => {
-
       cardioData.seconds = Math.floor(
         (Date.now() - cardioData.startTime) / 1000
       );
-
       updateCardioUI();
-
     }, 1000);
 
     if ("geolocation" in navigator) {
@@ -231,9 +226,7 @@ function toggleCardioTracking() {
         }
       );
     }
-
   } else {
-
     cardioData.isTracking = false;
 
     btn.innerText = "▶ Iniciar Atividade";
@@ -244,25 +237,6 @@ function toggleCardioTracking() {
     if (watchId !== null) {
       navigator.geolocation.clearWatch(watchId);
     }
-
-    saveCardioHistory();
-  }
-}
-
-    if ("geolocation" in navigator) {
-      watchId = navigator.geolocation.watchPosition(
-        handleGPSPosition,
-        (err) => console.log(err),
-        { enableHighAccuracy: true, maximumAge: 1000 }
-      );
-    }
-  } else {
-    cardioData.isTracking = false;
-    btn.innerText = "▶ Iniciar Atividade";
-    btn.classList.remove("active");
-
-    clearInterval(cardioData.intervalId);
-    if (watchId !== null) navigator.geolocation.clearWatch(watchId);
 
     saveCardioHistory();
   }
@@ -412,6 +386,7 @@ function generateWorkout() {
   updateDashboard();
   alert(`Treino ${currentWorkout} concluído com sucesso! 💪`);
 }
+
 function deleteHistoryItem(index) {
   if (!confirm("Excluir este registro do histórico?")) return;
 
@@ -421,6 +396,7 @@ function deleteHistoryItem(index) {
   updateDashboard();
   renderHistory();
 }
+
 function saveCardioHistory() {
   const now = new Date();
   const dateStr = now.toLocaleDateString('pt-BR');
@@ -441,14 +417,9 @@ function saveCardioHistory() {
 }
 
 function renderHistory() {
+  document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
 
-  document
-    .querySelectorAll(".tabs button")
-    .forEach(btn => btn.classList.remove("active"));
-
-  document
-    .getElementById("btn-tab-Hist")
-    .classList.add("active");
+  document.getElementById("btn-tab-Hist").classList.add("active");
 
   document.getElementById("exercise-list").style.display = "none";
   document.getElementById("cardio-panel").style.display = "none";
@@ -460,72 +431,39 @@ function renderHistory() {
   container.innerHTML = "";
 
   if (history.length === 0) {
-
-    container.innerHTML =
-      `<p style="color:#666; text-align:center; padding:20px;">
-        Nenhum histórico registrado.
-      </p>`;
-
+    container.innerHTML = `<p style="color:#666; text-align:center; padding:20px;">Nenhum histórico registrado.</p>`;
     return;
   }
 
-  history
-    .slice()
-    .reverse()
-    .forEach((item, reverseIndex) => {
-
-      const originalIndex =
-        history.length - 1 - reverseIndex;
-
-      const div = document.createElement("div");
-
-      div.className = "exercise";
-
-      div.innerHTML = `
-        <strong style="color:#fd7e14;">
-          ${item.title}
-        </strong>
-        -
-        <small style="color:#aaa;">
-          ${item.date}
-        </small>
-
-        <p style="margin-top:6px;font-size:0.85rem;color:#ccc;">
-          ${
-            item.type === 'cardio'
-              ? `Distância: ${item.distance} km | Tempo: ${item.duration}`
-              : `Exercícios: ${item.exercisesCount}`
-          }
-        </p>
-
-        <button
-          onclick="deleteHistoryItem(${originalIndex})"
-          style="
-            margin-top:10px;
-            padding:8px 12px;
-            border:none;
-            border-radius:8px;
-            background:#dc3545;
-            color:white;
-            cursor:pointer;
-          ">
-          🗑 Excluir
-        </button>
-      `;
-
-      container.appendChild(div);
-    });
-}
-
-  history.slice().reverse().forEach(item => {
+  history.slice().reverse().forEach((item, reverseIndex) => {
+    const originalIndex = history.length - 1 - reverseIndex;
     const div = document.createElement("div");
     div.className = "exercise";
+
     div.innerHTML = `
-      <strong style="color: #fd7e14;">${item.title}</strong> - <small style="color:#aaa;">${item.date}</small>
-      <p style="margin-top: 6px; font-size:0.85rem; color:#ccc;">
-        ${item.type === 'cardio' ? `Distância: ${item.distance} km \vert{} Tempo:${item.duration}` : `Exercícios: ${item.exercisesCount}`}
+      <strong style="color:#fd7e14;">${item.title}</strong> - <small style="color:#aaa;">${item.date}</small>
+      <p style="margin-top:6px;font-size:0.85rem;color:#ccc;">
+        ${
+          item.type === 'cardio'
+            ? `Distância: ${item.distance} km | Tempo: ${item.duration}`
+            : `Exercícios: ${item.exercisesCount}`
+        }
       </p>
+      <button
+        onclick="deleteHistoryItem(${originalIndex})"
+        style="
+          margin-top:10px;
+          padding:8px 12px;
+          border:none;
+          border-radius:8px;
+          background:#dc3545;
+          color:white;
+          cursor:pointer;
+        ">
+        🗑 Excluir
+      </button>
     `;
+
     container.appendChild(div);
   });
 }
